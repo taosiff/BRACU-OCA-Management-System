@@ -1,0 +1,100 @@
+﻿classDiagram
+  class User {
+    +email: string
+    +name: string
+    +role:  oca|club
+    +passwordHash: string
+  }
+
+  class Club {
+    +email: string
+    +name: string
+    +fullName: string
+    +description: string
+    +photo_url: string
+    +totalMembers: number
+    +advisors: Person[]
+    +panel: Person[]
+    +notableAlumnis: Person[]
+  }
+
+  class Person {
+    +name: string
+    +role: string
+    +photo: string
+    +email?: string
+  }
+
+  class Event {
+    +title: string
+    +clubMail: string
+    +status: Pending|Responded
+    +response?: Accepted|Rejected
+    +date: Date
+    +budget: number
+    +roomNumber: string
+    +feedback?: string
+  }
+
+  class Announcement {
+    +title: string
+    +description: string
+    +date: Date
+    +posterEmail: string
+  }
+
+  class Message {
+    +senderEmail: string
+    +receiverEmail: string
+    +text: string
+    +date: string
+    +time: string
+  }
+
+  class AuthController {
+    +login(email, password)
+    +changePassword(email, oldPwd, newPwd)
+  }
+
+  class ClubService {
+    +getClubList()
+    +getAllClubs()
+    +updateClub(id, data)
+  }
+
+  class EventService {
+    +createEvent(data)
+    +getPendingEvents(email)
+    +getAllEvents()
+  }
+
+  class MessageService {
+    +getMessages(clubMail)
+    +sendMessage(messageInfo)
+  }
+
+  class AnnouncementService {
+    +getAnnouncements()
+    +addAnnouncement(data)
+    +deleteAnnouncement(id)
+  }
+
+  class DashboardService {
+    +getDashboardInfo(email)
+    +getUpcomingEvents()
+  }
+
+  User 1 o-- 0..1 Club : manages via email
+  Club 1 o-- 0..* Person : advisors/panel/alumni
+  Club 1 o-- 0..* Event : organizes
+  User 1 o-- 0..* Announcement : posts
+  User 1 --> 0..* Message : sends
+  User 1 <-- 0..* Message : receives
+
+  AuthController ..> User : authenticates
+  ClubService ..> Club : CRUD
+  EventService ..> Event : CRUD
+  MessageService ..> Message : CRUD
+  AnnouncementService ..> Announcement : CRUD
+  DashboardService ..> Club : reads
+  DashboardService ..> Event : reads
