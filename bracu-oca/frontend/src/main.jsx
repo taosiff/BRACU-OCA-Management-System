@@ -4,7 +4,7 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import AuthProvider from "./Context/AuthProvider";
 import "./index.css";
-import { router } from "./Routes/Routes";
+import { router } from "./routes/Routes";
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
