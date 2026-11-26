@@ -6,13 +6,13 @@ import { FaCalendar, FaHome } from "react-icons/fa";
 import { MdAnalytics, MdChat, MdEvent } from "react-icons/md";
 import { NavLink, Outlet } from "react-router-dom";
 import { AuthContext } from "../Context/AuthProvider";
-import useCurrentUser from "../Hooks/useCurrentUser";
+import useCurrentUser from "../hooks/useCurrentUser";
 
 const Dashboard = () => {
   const { user, logOut } = useContext(AuthContext);
-  const role = user?.email === "oca@bracu.ac.bd" ? "oca" : "club";
-  const email = user?.email;
-  const username = email.split("@")[0];
+  const email = user?.email || "";
+  const role = user?.role || (email === "oca@bracu.ac.bd" ? "oca" : "club");
+  const username = email ? email.split("@")[0] : "USER";
   const uppercaseUsername = username.toUpperCase();
 
   const [currUser] = useCurrentUser();
@@ -31,7 +31,14 @@ const Dashboard = () => {
       { to: "/dashboard/calendar", icon: <FaCalendar className="text-2xl" />, label: "Calendar" },
       { to: "/dashboard/club-analytics", icon: <MdAnalytics className="text-2xl" />, label: "Transactions" },
       { to: "/dashboard/chat", icon: <MdChat className="text-2xl" />, label: "Chat" },
-      { to: `/dashboard/club-info/${currUser._id}`, icon: <BsInfo className="text-2xl" />, label: "Club Info" },
+      ...(currUser?._id
+        ? [{ to: `/dashboard/club-info/${currUser._id}`, icon: <BsInfo className="text-2xl" />, label: "Club Info" }]
+        : []),
+    ],
+    visitor: [
+      { to: "/dashboard", icon: <FaHome className="text-xl" />, label: "Dashboard" },
+      { to: "/dashboard/club-info", icon: <BsInfo className="text-2xl" />, label: "Clubs Directory" },
+      { to: "/dashboard/calendar", icon: <FaCalendar className="text-2xl" />, label: "Event Calendar" },
     ],
   };
 
@@ -40,54 +47,72 @@ const Dashboard = () => {
     { to: "/login", icon: <CgLogOut className="text-xl" />, label: "Logout", action: logOut },
   ];
 
+  const displayLabel =
+    role === "oca" ? "OCA" : role === "visitor" ? (user?.name || "VISITOR") : uppercaseUsername;
+
   return (
-    <div className="flex font-poppins" data-theme="messi">
-      <div className="bg-blue-800 w-[250px] min-h-screen">
-        <ul className="menu space-y-5 mt-2 p-4 text-base text-blue-200 font-medium">
-          {/* Role-specific navbar */}
-          {role === "oca" && (
-            <li className="text-center text-4xl font-semibold text-white">OCA</li>
-          )}
-          {role === "club" && (
-            <li className="text-center text-2xl font-semibold text-white">
-              {uppercaseUsername}
-            </li>
-          )}
+    <div className="flex font-poppins bg-[#F4F6F8] min-h-screen" data-theme="messi">
+      <div className="bg-gradient-to-b from-[#0E4D6B] via-[#1B4254] to-[#3A3F47] w-[250px] min-h-screen shrink-0 shadow-xl">
+        <ul className="menu space-y-3 mt-2 p-4 text-base text-[#FEFFFA]/80 font-medium">
+          <li className="flex flex-col items-center py-4 border-b border-[#FEFFFA]/10 mb-2">
+            <img
+              src={currUser?.photo_url || "/images/logos/oca.svg"}
+              alt={displayLabel}
+              className="w-12 h-12 rounded-xl object-cover mb-2 shadow-md"
+            />
+            <span className="text-lg font-bold text-[#FEFFFA] tracking-wide text-center">
+              {displayLabel}
+            </span>
+            {role === "visitor" && (
+              <span className="text-[11px] uppercase tracking-widest text-[#FEFFFA]/65 mt-0.5">
+                Visitor
+              </span>
+            )}
+          </li>
 
           {(navItems[role] || []).map((item, index) => (
             <li key={index}>
               <NavLink
                 to={item.to}
+                end={item.to === "/dashboard"}
                 className={({ isActive }) =>
-                  `flex items-center gap-2 p-2 ${isActive ? "bg-white text-blue-800 hover:bg-blue-700 hover:text-white" : "text-blue-200"}`
+                  `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                    isActive
+                      ? "bg-[#FEFFFA] text-[#0E4D6B] font-semibold shadow-sm"
+                      : "text-[#FEFFFA]/80 hover:bg-[#FEFFFA]/10 hover:text-[#FEFFFA]"
+                  }`
                 }
               >
                 {item.icon}
-                <span className="text-base">{item.label}</span>
+                <span className="text-sm">{item.label}</span>
               </NavLink>
             </li>
           ))}
 
-          <div className="border-t border-blue-400/20 my-4"></div>
+          <div className="border-t border-[#FEFFFA]/15 my-4"></div>
 
           {commonItems.map((item, index) => (
             <li key={index} onClick={item.action || (() => {})}>
               <NavLink
                 to={item.to}
                 className={({ isActive }) =>
-                  `flex items-center gap-2 p-2 ${isActive ? "bg-white text-blue-800" : "text-blue-200"}`
+                  `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                    isActive
+                      ? "bg-[#FEFFFA] text-[#0E4D6B] font-semibold"
+                      : "text-[#FEFFFA]/80 hover:bg-[#FEFFFA]/10 hover:text-[#FEFFFA]"
+                  }`
                 }
               >
                 {item.icon}
-                <span className="text-base">{item.label}</span>
+                <span className="text-sm">{item.label}</span>
               </NavLink>
             </li>
           ))}
         </ul>
       </div>
-      <div className="p-8 bg-blue-50 w-full font-poppins">
-        <div className="w-full min-h-screen bg-blue-50">
-        <Outlet />
+      <div className="p-8 bg-[#F4F6F8] w-full font-poppins">
+        <div className="w-full min-h-screen bg-[#F4F6F8]">
+          <Outlet />
         </div>
       </div>
     </div>

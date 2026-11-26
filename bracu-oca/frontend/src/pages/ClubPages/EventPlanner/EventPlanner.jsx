@@ -1,5 +1,4 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { BiMoney } from "react-icons/bi";
@@ -13,10 +12,11 @@ import {
 } from "react-icons/md";
 import Swal from "sweetalert2";
 import { AuthContext } from "../../../Context/AuthProvider";
-import useCurrentUser from "../../../Hooks/useCurrentUser";
-import usePendingRequests from "../../../Hooks/usePendingRequests";
-import useRespondedRequests from "../../../Hooks/useRespondedRequests";
+import useCurrentUser from "../../../hooks/useCurrentUser";
+import usePendingRequests from "../../../hooks/usePendingRequests";
+import useRespondedRequests from "../../../hooks/useRespondedRequests";
 import Loading from "../../../components/Loading";
+import apiClient from "../../../utils/apiClient";
 
 const Tooltip = ({ message, children }) => {
   return (
@@ -56,7 +56,7 @@ const EventPlanner = () => {
 
   const mutation = useMutation({
     mutationFn: (data) => {
-      return axios.post(`${import.meta.env.VITE_API_URL}/new-event`, data);
+      return apiClient.post("/new-event", data);
     },
     onSuccess: () => {
       Swal.fire({
@@ -73,9 +73,9 @@ const EventPlanner = () => {
       Swal.fire({
         position: "top-end",
         icon: "error",
-        title: `Error - ${e}`,
+        title: e?.response?.data?.message || e.message || "Failed to submit event",
         showConfirmButton: false,
-        timer: 1500,
+        timer: 2000,
       });
     },
   });
@@ -107,7 +107,7 @@ const onSubmit = async (data) => {
     // Check room availability if room is selected
     if (room) {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_API_URL}/check-room-availability`, {
+        const response = await apiClient.post("/check-room-availability", {
           date,
           roomNumber: room
         });
@@ -127,7 +127,7 @@ const onSubmit = async (data) => {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: "Failed to check room availability",
+          text: error?.response?.data?.message || "Failed to check room availability",
           showConfirmButton: false,
           timer: 1500,
         });
@@ -138,13 +138,14 @@ const onSubmit = async (data) => {
     // If all checks pass, proceed with form submission
     const postData = {
       ...data,
-      budget: parseInt(data.budget),
+      budget: data.needsBudget ? parseInt(data.budget, 10) || 0 : 0,
+      guestPassesCount: data.needsGuestPasses ? parseInt(data.guestPassesCount, 10) || 0 : 0,
       status: "Pending",
       response: "",
       feedback: "",
       requestDate: new Date(),
       clubMail: user?.email,
-      advisorEmail: clubInfo?.advisors?.[0]?.advisorEmail || "",
+      advisorEmail: clubInfo?.advisors?.[0]?.advisorEmail || clubInfo?.advisors?.[0]?.email || "",
     };
 
     mutation.mutate(postData);
@@ -166,8 +167,8 @@ const onSubmit = async (data) => {
   const { data: clubInfo, isLoading: isClubInfoLoading } = useQuery({
     queryKey: ["clubInfo", user?.email],
     queryFn: () =>
-      axios
-        .get(`${import.meta.env.VITE_API_URL}/dashboard-info/${user?.email}`)
+      apiClient
+        .get(`/dashboard-info/${user?.email}`)
         .then((res) => res.data),
     enabled: !!user?.email,
   });
@@ -182,7 +183,7 @@ const onSubmit = async (data) => {
     <div>
       <div className="navbar p-0 mt-[-20px]">
         <div className="flex-1">
-          <a className="text-[1.62rem] font-bold text-[#303972] ">
+          <a className="text-[1.62rem] font-bold text-[#3A3F47] ">
             Create a Proposal
           </a>
         </div>
@@ -207,24 +208,24 @@ const onSubmit = async (data) => {
         {/* Main Form Section - 55% width */}
         <div className="w-[55%]">
           <div className="bg-white rounded-lg shadow-lg">
-            <h2 className="text-lg font-semibold mb-6 bg-[#4c44b3] text-white p-3 rounded-tr-xl rounded-tl-xl w-full pl-4">
+            <h2 className="text-lg font-semibold mb-6 bg-[#0E4D6B] text-white p-3 rounded-tr-xl rounded-tl-xl w-full pl-4">
               Details
             </h2>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 px-9">
               {/* Title */}
               <div className="space-y-2">
-                <label className="block text-[#4c44b3] font-medium text-sm">
+                <label className="block text-[#0E4D6B] font-medium text-sm">
                   Title <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MdTitle className="h-5 w-5 text-[#4c44b3]" />
+                    <MdTitle className="h-5 w-5 text-[#0E4D6B]" />
                   </div>
                   <input
                     {...register("title", { required: true })}
-                    className="w-full pl-10 pr-4 py-2 border-2 border-[#4c44b3] border-opacity-30 rounded-lg 
-                     focus:outline-none focus:ring-2 focus:ring-[#4c44b3] focus:border-transparent bg-white placeholder:text-sm"
+                    className="w-full pl-10 pr-4 py-2 border-2 border-[#0E4D6B] border-opacity-30 rounded-lg 
+                     focus:outline-none focus:ring-2 focus:ring-[#0E4D6B] focus:border-transparent bg-white placeholder:text-sm"
                     placeholder="Event Title"
                   />
                   {errors.title && (
@@ -237,17 +238,17 @@ const onSubmit = async (data) => {
 
               {/* Description */}
               <div className="space-y-2">
-                <label className="block text-[#4c44b3] font-medium text-sm">
+                <label className="block text-[#0E4D6B] font-medium text-sm">
                   Description <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute left-3 top-3 pointer-events-none">
-                    <MdDescription className="h-5 w-5 text-[#4c44b3]" />
+                    <MdDescription className="h-5 w-5 text-[#0E4D6B]" />
                   </div>
                   <textarea
                     {...register("description", { required: true })}
-                    className="w-full pl-10 pr-4 py-2 border-2 border-[#4c44b3] border-opacity-30 rounded-lg 
-                     focus:outline-none focus:ring-2 focus:ring-[#4c44b3] focus:border-transparent bg-white placeholder:text-sm"
+                    className="w-full pl-10 pr-4 py-2 border-2 border-[#0E4D6B] border-opacity-30 rounded-lg 
+                     focus:outline-none focus:ring-2 focus:ring-[#0E4D6B] focus:border-transparent bg-white placeholder:text-sm"
                     rows={4}
                     placeholder="Event Description"
                   />
@@ -269,10 +270,10 @@ const onSubmit = async (data) => {
                       className="peer sr-only"
                     />
                     <div
-                      className="w-4 h-4 border-2 border-[#4c44b3] border-opacity-30 rounded 
+                      className="w-4 h-4 border-2 border-[#0E4D6B] border-opacity-30 rounded 
                          bg-white transition-all duration-300
-                         peer-checked:border-[#4c44b3] peer-checked:border-opacity-100
-                         peer-checked:bg-[#4c44b3] group-hover:border-opacity-50"
+                         peer-checked:border-[#0E4D6B] peer-checked:border-opacity-100
+                         peer-checked:bg-[#0E4D6B] group-hover:border-opacity-50"
                     ></div>
                     <div
                       className="absolute top-[2px] left-[5px] opacity-0 
@@ -292,7 +293,7 @@ const onSubmit = async (data) => {
                       </svg>
                     </div>
                   </div>
-                  <span className="text-[#4c44b3] font-medium select-none flex items-center gap-2 text-sm">
+                  <span className="text-[#0E4D6B] font-medium select-none flex items-center gap-2 text-sm">
                     Budget Required
                   </span>
                 </label>
@@ -303,22 +304,22 @@ const onSubmit = async (data) => {
                       <input
                         type="number"
                         {...register("budget", { required: showBudget })}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-[#4c44b3] border-opacity-30 rounded-lg 
-                         focus:outline-none focus:ring-2 focus:ring-[#4c44b3] focus:border-transparent bg-white placeholder:text-sm"
+                        className="w-full pl-10 pr-4 py-2 border-2 border-[#0E4D6B] border-opacity-30 rounded-lg 
+                         focus:outline-none focus:ring-2 focus:ring-[#0E4D6B] focus:border-transparent bg-white placeholder:text-sm"
                         placeholder="Budget Amount"
                       />
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <BiMoney className="h-5 w-5 text-[#4c44b3]" />
+                        <BiMoney className="h-5 w-5 text-[#0E4D6B]" />
                       </div>
                     </div>
                     <div className="relative">
                       <div className="absolute left-3 top-3 pointer-events-none">
-                        <FaRegFileAlt className="h-5 w-5 text-[#4c44b3]" />
+                        <FaRegFileAlt className="h-5 w-5 text-[#0E4D6B]" />
                       </div>
                       <textarea
                         {...register("budgetDetails", { required: showBudget })}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-[#4c44b3] border-opacity-30 rounded-lg 
-                         focus:outline-none focus:ring-2 focus:ring-[#4c44b3] focus:border-transparent bg-white placeholder:text-sm"
+                        className="w-full pl-10 pr-4 py-2 border-2 border-[#0E4D6B] border-opacity-30 rounded-lg 
+                         focus:outline-none focus:ring-2 focus:ring-[#0E4D6B] focus:border-transparent bg-white placeholder:text-sm"
                         rows={3}
                         placeholder="Provide detailed budget breakdown"
                       />
@@ -337,10 +338,10 @@ const onSubmit = async (data) => {
                       className="peer sr-only"
                     />
                     <div
-                      className="w-4 h-4 border-2 border-[#4c44b3] border-opacity-30 rounded 
+                      className="w-4 h-4 border-2 border-[#0E4D6B] border-opacity-30 rounded 
                          bg-white transition-all duration-300
-                         peer-checked:border-[#4c44b3] peer-checked:border-opacity-100
-                         peer-checked:bg-[#4c44b3] group-hover:border-opacity-50"
+                         peer-checked:border-[#0E4D6B] peer-checked:border-opacity-100
+                         peer-checked:bg-[#0E4D6B] group-hover:border-opacity-50"
                     ></div>
                     <div
                       className="absolute top-[2px] left-[5px] opacity-0 
@@ -360,7 +361,7 @@ const onSubmit = async (data) => {
                       </svg>
                     </div>
                   </div>
-                  <span className="text-[#4c44b3] text-sm font-medium select-none flex items-center gap-2">
+                  <span className="text-[#0E4D6B] text-sm font-medium select-none flex items-center gap-2">
                     Room Required
                   </span>
                 </label>
@@ -369,12 +370,12 @@ const onSubmit = async (data) => {
                   <div className="pl-8 animate-fadeIn">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <BsBuilding className="h-5 w-5 text-[#4c44b3]" />
+                        <BsBuilding className="h-5 w-5 text-[#0E4D6B]" />
                       </div>
                       <select
                         {...register("roomNumber", { required: showRoom })}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-[#4c44b3] border-opacity-30 rounded-lg 
-                         focus:outline-none focus:ring-2 focus:ring-[#4c44b3] focus:border-transparent bg-white text-sm"
+                        className="w-full pl-10 pr-4 py-2 border-2 border-[#0E4D6B] border-opacity-30 rounded-lg 
+                         focus:outline-none focus:ring-2 focus:ring-[#0E4D6B] focus:border-transparent bg-white text-sm"
                       >
                         <option value="">Select a room</option>
                         {[
@@ -406,10 +407,10 @@ const onSubmit = async (data) => {
                       className="peer sr-only"
                     />
                     <div
-                      className="w-4 h-4 border-2 border-[#4c44b3] border-opacity-30 rounded 
+                      className="w-4 h-4 border-2 border-[#0E4D6B] border-opacity-30 rounded 
                          bg-white transition-all duration-300
-                         peer-checked:border-[#4c44b3] peer-checked:border-opacity-100
-                         peer-checked:bg-[#4c44b3] group-hover:border-opacity-50"
+                         peer-checked:border-[#0E4D6B] peer-checked:border-opacity-100
+                         peer-checked:bg-[#0E4D6B] group-hover:border-opacity-50"
                     ></div>
                     <div
                       className="absolute top-[2px] left-[5px] opacity-0 
@@ -429,7 +430,7 @@ const onSubmit = async (data) => {
                       </svg>
                     </div>
                   </div>
-                  <span className="text-[#4c44b3] text-sm font-medium select-none flex items-center gap-2">
+                  <span className="text-[#0E4D6B] text-sm font-medium select-none flex items-center gap-2">
                     Guest Passes Required
                   </span>
                 </label>
@@ -438,15 +439,15 @@ const onSubmit = async (data) => {
                   <div className="pl-8 animate-fadeIn">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <HiOutlineUserGroup className="h-5 w-5 text-[#4c44b3]" />
+                        <HiOutlineUserGroup className="h-5 w-5 text-[#0E4D6B]" />
                       </div>
                       <input
                         type="number"
                         {...register("guestPassesCount", {
                           required: showGuestPasses,
                         })}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-[#4c44b3] border-opacity-30 rounded-lg 
-                         focus:outline-none focus:ring-2 focus:ring-[#4c44b3] focus:border-transparent bg-white placeholder:text-sm"
+                        className="w-full pl-10 pr-4 py-2 border-2 border-[#0E4D6B] border-opacity-30 rounded-lg 
+                         focus:outline-none focus:ring-2 focus:ring-[#0E4D6B] focus:border-transparent bg-white placeholder:text-sm"
                         placeholder="Number of passes needed"
                       />
                     </div>
@@ -456,35 +457,35 @@ const onSubmit = async (data) => {
 
               {/* Date Section */}
               <div className="space-y-2">
-                <label className="block text-[#4c44b3] font-medium text-sm ">
+                <label className="block text-[#0E4D6B] font-medium text-sm ">
                   Date <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MdDateRange className="h-5 w-5 text-[#4c44b3]" />
+                    <MdDateRange className="h-5 w-5 text-[#0E4D6B]" />
                   </div>
                   <input
                     type="date"
                     {...register("date", { required: true })}
-                    className="w-full pl-10 pr-4 py-2 border-2 border-[#4c44b3] border-opacity-30 rounded-lg 
-                     focus:outline-none focus:ring-2 focus:ring-[#4c44b3] focus:border-transparent bg-white placeholder:text-sm text-sm"
+                    className="w-full pl-10 pr-4 py-2 border-2 border-[#0E4D6B] border-opacity-30 rounded-lg 
+                     focus:outline-none focus:ring-2 focus:ring-[#0E4D6B] focus:border-transparent bg-white placeholder:text-sm text-sm"
                   />
                 </div>
               </div>
 
               {/* Additional Requirements */}
               <div className="space-y-2">
-                <label className="block text-[#4c44b3] font-medium text-sm">
+                <label className="block text-[#0E4D6B] font-medium text-sm">
                   Additional Requirements or Documents
                 </label>
                 <div className="relative">
                   <div className="absolute left-3 top-3 pointer-events-none">
-                    <FaRegFileAlt className="h-5 w-5 text-[#4c44b3]" />
+                    <FaRegFileAlt className="h-5 w-5 text-[#0E4D6B]" />
                   </div>
                   <textarea
                     {...register("additionalRequirements")}
-                    className="w-full pl-10 pr-4 py-2 border-2 border-[#4c44b3] border-opacity-30 rounded-lg 
-                     focus:outline-none focus:ring-2 focus:ring-[#4c44b3] focus:border-transparent bg-white placeholder:text-sm"
+                    className="w-full pl-10 pr-4 py-2 border-2 border-[#0E4D6B] border-opacity-30 rounded-lg 
+                     focus:outline-none focus:ring-2 focus:ring-[#0E4D6B] focus:border-transparent bg-white placeholder:text-sm"
                     rows={4}
                     placeholder="Anything else you need - Sound System, IT support or something else.  
 
@@ -503,10 +504,10 @@ Or If you want to submit a document upload the document in the drive and share t
                       className="peer sr-only"
                     />
                     <div
-                      className="w-4 h-4 border-2 border-[#4c44b3] border-opacity-30 rounded 
+                      className="w-4 h-4 border-2 border-[#0E4D6B] border-opacity-30 rounded 
                    bg-white transition-all duration-300
-                   peer-checked:border-[#4c44b3] peer-checked:border-opacity-100
-                   peer-checked:bg-[#4c44b3] group-hover:border-opacity-50"
+                   peer-checked:border-[#0E4D6B] peer-checked:border-opacity-100
+                   peer-checked:bg-[#0E4D6B] group-hover:border-opacity-50"
                     ></div>
                     <div
                       className="absolute top-[2px] left-[5px] opacity-0 
@@ -526,7 +527,7 @@ Or If you want to submit a document upload the document in the drive and share t
                       </svg>
                     </div>
                   </div>
-                  <span className="text-[#4c44b3] font-medium select-none flex items-center gap-2 text-sm">
+                  <span className="text-[#0E4D6B] font-medium select-none flex items-center gap-2 text-sm">
                     Notify your Advisor through email
                   </span>
                 </label>
@@ -541,7 +542,7 @@ Or If you want to submit a document upload the document in the drive and share t
 <div className="w-full flex justify-end pb-5 pt-2">
   <button
     type="submit"
-    className="bg-[#4c44b3] text-white px-8 py-2.5 rounded-lg hover:bg-opacity-90 
+    className="bg-[#0E4D6B] text-white px-8 py-2.5 rounded-lg hover:bg-opacity-90 
              transition-colors font-medium flex items-center gap-2 shadow-md
              hover:shadow-lg active:scale-[0.98] transform duration-100
              disabled:opacity-50 disabled:cursor-not-allowed"
@@ -559,14 +560,14 @@ Or If you want to submit a document upload the document in the drive and share t
           <div className="rounded-lg">
             <div className="bg-white rounded-xl p-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-[#4c44b3] text-[1.1rem] font-bold">
+                <h2 className="text-[#0E4D6B] text-[1.1rem] font-bold">
                   Pending Events
                 </h2>
                 {pendingRequests?.length > 2 && (
                   <Tooltip message="View all pending events">
                     <label
                       htmlFor="pending-modal"
-                      className="cursor-pointer text-[#4c44b3] hover:text-[#303972] transition-colors"
+                      className="cursor-pointer text-[#0E4D6B] hover:text-[#3A3F47] transition-colors"
                     >
                       <HiOutlineViewList className="text-2xl" />
                     </label>
@@ -595,14 +596,14 @@ Or If you want to submit a document upload the document in the drive and share t
           <div className="rounded-lg">
             <div className="bg-white rounded-xl p-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-[#4c44b3] text-[1.1rem] font-bold">
+                <h2 className="text-[#0E4D6B] text-[1.1rem] font-bold">
                   Recent Proposals
                 </h2>
                 {respondedRequests?.length > 2 && (
                   <Tooltip message="View all proposals">
                     <label
                       htmlFor="responded-modal"
-                      className="cursor-pointer text-[#4c44b3] hover:text-[#303972] transition-colors"
+                      className="cursor-pointer text-[#0E4D6B] hover:text-[#3A3F47] transition-colors"
                     >
                       <HiOutlineViewList className="text-2xl" />
                     </label>
@@ -639,7 +640,7 @@ Or If you want to submit a document upload the document in the drive and share t
             ✕
           </label>
           <div className="border-b pb-4 mb-4">
-            <h3 className="font-bold text-[1.1rem] text-[#4c44b3]">
+            <h3 className="font-bold text-[1.1rem] text-[#0E4D6B]">
               All Pending Events
             </h3>
           </div>
@@ -668,7 +669,7 @@ Or If you want to submit a document upload the document in the drive and share t
             ✕
           </label>
           <div className="border-b pb-4 mb-4">
-            <h3 className="font-bold text-[1.1rem] text-[#4c44b3]">
+            <h3 className="font-bold text-[1.1rem] text-[#0E4D6B]">
               All Recent Proposals
             </h3>
           </div>
@@ -705,23 +706,23 @@ const ProposalCard = ({ event, pendingRequestsRefetch, borderColor }) => {
     })
       .then((result) => {
         if (result.isConfirmed) {
-          axios
-            .delete(`${import.meta.env.VITE_API_URL}/event-planner/${eventId}`)
+          apiClient
+            .delete(`/event-planner/${eventId}`)
             .then(() => {
-              Swal.fire("Deleted!", "Your file has been deleted.", "success");
+              Swal.fire("Deleted!", "Your event proposal has been deleted.", "success");
               pendingRequestsRefetch();
+            })
+            .catch((error) => {
+              Swal.fire({
+                position: "top-end",
+                icon: "error",
+                title: error?.response?.data?.message || "Failed to delete event",
+                showConfirmButton: false,
+                timer: 1500,
+              });
             });
         }
       })
-      .catch((error) => {
-        Swal.fire({
-          position: "top-end",
-          icon: "error",
-          title: `Error - ${error}`,
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      });
   };
 
   return (
@@ -730,7 +731,7 @@ const ProposalCard = ({ event, pendingRequestsRefetch, borderColor }) => {
       style={{ borderLeft: `8px solid ${borderColor}` }}
     >
       <div className="flex items-start gap-4 relative">
-        <div className="text-[#4c44b3]  absolute bottom-0 right-1 flex justify-center items-center gap-2 border border-gray-200 p-1 rounded-lg text-sm">
+        <div className="text-[#0E4D6B]  absolute bottom-0 right-1 flex justify-center items-center gap-2 border border-gray-200 p-1 rounded-lg text-sm">
           <span className="h-2 w-2 inline-block rounded-full bg-[#b6cc29]"></span>
           Pending
         </div>
@@ -742,12 +743,12 @@ const ProposalCard = ({ event, pendingRequestsRefetch, borderColor }) => {
           x
         </button>
         {/* Left colored bar */}
-        <div className="w-2 h-full bg-[rgb(240,241,255)] rounded-full self-stretch" />
+        <div className="w-2 h-full bg-[#F4F6F8] rounded-full self-stretch" />
 
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="font-semibold text-base text-[#4c44b3]">
+              <h3 className="font-semibold text-base text-[#0E4D6B]">
                 {event.title}
               </h3>
               <p className="text-gray-500 text-sm mt-1">
@@ -755,7 +756,7 @@ const ProposalCard = ({ event, pendingRequestsRefetch, borderColor }) => {
               </p>
             </div>
             {/* Status circle */}
-            <div className="w-3 h-3 rounded-full bg-[rgb(240,241,255)]" />
+            <div className="w-3 h-3 rounded-full bg-[#F4F6F8]" />
           </div>
 
           <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
@@ -833,7 +834,7 @@ const EventCard = ({ event, borderColor }) => {
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="font-semibold text-base text-[#4c44b3]">
+              <h3 className="font-semibold text-base text-[#0E4D6B]">
                 {event.title}
               </h3>
               <p className="text-gray-500 text-sm mt-1">
@@ -896,7 +897,7 @@ const EventCard = ({ event, borderColor }) => {
               </div>
             </div>
             {event.feedback && (
-              <div className="bg-gray-50 p-3 rounded-lg">
+              <div className="bg-[#FEFFFA] p-3 rounded-lg">
                 <p className="text-sm text-gray-600">
                   <span className="font-medium">Feedback: </span>
                   {event.feedback || "No feedback provided"}

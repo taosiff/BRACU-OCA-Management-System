@@ -1,34 +1,31 @@
 const announcementsService = require("../services/announcement.service");
 
-const getAnnouncements = async (req, res) => {
+const getAnnouncements = async (req, res, next) => {
   try {
     const announcements = await announcementsService.getAnnouncements();
     res.status(200).json(announcements);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
-const addAnnouncement = async (req, res) => {
+const addAnnouncement = async (req, res, next) => {
   try {
-    const announcement = await announcementsService.addAnnouncement(req.body);
+    const announcement = await announcementsService.addAnnouncement(req.body || {}, req.decoded);
     res.status(201).json(announcement);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
-const deleteAnnouncement = async (req, res) => {
+const deleteAnnouncement = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    console.log(id);
-    await announcementsService.deleteAnnouncement(id);
+    await announcementsService.deleteAnnouncement(req.params.id, req.decoded);
     res.status(200).json({ message: "Announcement deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
-
 
 module.exports = {
   getAnnouncements,

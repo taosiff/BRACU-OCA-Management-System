@@ -1,22 +1,20 @@
 const messageService = require("../services/message.service");
 
-const getMessages = async (req, res) => {
-  const clubMail = req.params.email;
+const getMessages = async (req, res, next) => {
   try {
-    const messages = await messageService.getMessages(clubMail);
+    const messages = await messageService.getMessages(req.params.email);
     res.json(messages);
   } catch (error) {
-    res.status(500).send("Error fetching messages");
+    next(error);
   }
 };
 
-const sendMessage = async (req, res) => {
-  const messageInfo = req.body;
+const sendMessage = async (req, res, next) => {
   try {
-    const result = await messageService.sendMessage(messageInfo);
-    res.send(result);
+    const result = await messageService.sendMessage(req.body || {}, req.decoded);
+    res.status(201).json(result);
   } catch (error) {
-    res.status(500).send("Error sending message");
+    next(error);
   }
 };
 
@@ -24,4 +22,3 @@ module.exports = {
   getMessages,
   sendMessage,
 };
-

@@ -1,5 +1,3 @@
-const client = require("../config/dbConfig");
+const { getDb } = require("../config/dbConfig");
 
-const eventsCollection = client.db("BRACU_OCA").collection("events");
-
-module.exports = eventsCollection;
+module.exports = getDb().collection("events");

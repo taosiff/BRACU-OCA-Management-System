@@ -1,14 +1,15 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
+import apiClient from "../../../utils/apiClient";
 
 
 const OcaChat = () => {
   const [club, setClubs] = useState([]);
   useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_API_URL}/club-list`)
-      .then((response) => setClubs(response.data));
+    apiClient
+      .get("/club-list")
+      .then((response) => setClubs(response.data))
+      .catch((err) => console.error(err));
   }, []);
   const clubsOnly = club?.filter((user) => user.name !== "OCA");
   const oca = club?.find((user) => user.name === "OCA");
@@ -17,7 +18,7 @@ const OcaChat = () => {
       {/* header */}
       <div className="navbar p-0 mt-[-20px] ">
         <div className="flex-1">
-          <a className="text-3xl font-bold text-[#303972] ">Chat</a>
+          <a className="text-3xl font-bold text-[#3A3F47] ">Chat</a>
         </div>
         <div className="flex-none gap-2">
           <div className="dropdown dropdown-end">
@@ -39,7 +40,7 @@ const OcaChat = () => {
       {/* header end */}
       <div className="flex">
         <div className="w-[330px] p-7 bg-white rounded-lg">
-          <p className="text-xl font-bold text-[#303972] text-left">Messages</p>
+          <p className="text-xl font-bold text-[#3A3F47] text-left">Messages</p>
           {/* search input */}
           <div className="py-6">
             <label className="input input-bordered flex items-center gap-2 border border-[#A098AE] rounded-3xl h-10 bg-white">
@@ -75,7 +76,7 @@ const OcaChat = () => {
                       </div>
                     </div>
                     <div>
-                      <div className="font-semibold text-[#303972] text-base">
+                      <div className="font-semibold text-[#3A3F47] text-base">
                         {club.name}
                       </div>
                       <div className="text-sm text-[#A098AE] opacity-50">

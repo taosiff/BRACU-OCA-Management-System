@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
@@ -14,10 +13,11 @@ import {
   YAxis,
 } from "recharts";
 import { AuthContext } from "../../Context/AuthProvider";
-import useAllClubs from "../../Hooks/useAllClubs";
-import useAllEvents from "../../Hooks/useAllEvents";
-import useCurrentUser from "../../Hooks/useCurrentUser";
+import useAllClubs from "../../hooks/useAllClubs";
+import useAllEvents from "../../hooks/useAllEvents";
+import useCurrentUser from "../../hooks/useCurrentUser";
 import Announcements from "../Shared/Announcement";
+import apiClient from "../../utils/apiClient";
 
 const DashboardHome = () => {
   const { user } = useContext(AuthContext);
@@ -34,13 +34,13 @@ const DashboardHome = () => {
   const [currentUser] = useCurrentUser();
   const isOCA = currentUser?.role === "oca";
 
-  const COLORS = ["#3A82F6", "#F97316", "#1D4ED8", "#FACC15", "#10B981"];
+  const COLORS = ["#0E4D6B", "#3A3F47", "#1B6B91", "#5A626D", "#0A3A52"];
 
   // Fetch dashboard data
   useEffect(() => {
     if (user?.email) {
-      axios
-        .get(`${import.meta.env.VITE_API_URL}/dashboard-info/${user.email}`)
+      apiClient
+        .get(`/dashboard-info/${user.email}`)
         .then((res) => setData(res.data))
         .catch((err) => console.error("Error fetching dashboard info:", err));
     }
@@ -48,8 +48,8 @@ const DashboardHome = () => {
 
   // Fetch upcoming events
   useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_API_URL}/dashboard-events`)
+    apiClient
+      .get("/dashboard-events")
       .then((res) => {
         const sortedEvents = res.data
           .filter((event) => new Date(event.date) >= new Date())
@@ -58,7 +58,7 @@ const DashboardHome = () => {
         setUpcomingEvents(sortedEvents);
       })
       .catch((err) => console.error("Error fetching events:", err));
-  }, [ user?.email]);
+  }, [user?.email]);
 
   // Analytics processing
   useEffect(() => {
@@ -110,10 +110,10 @@ const DashboardHome = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-[#FEFFFA] p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-blue-800">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-[#0E4D6B]">Dashboard</h1>
         <div className="flex items-center">
           <NavLink to={`/dashboard/club-info/${data?._id}`} className="relative">
             <img
@@ -137,16 +137,16 @@ const DashboardHome = () => {
                 className="w-20 h-20 rounded-lg object-cover"
               />
               <div>
-                <h2 className="text-xl font-bold text-blue-800">{data?.name}</h2>
+                <h2 className="text-xl font-bold text-[#0E4D6B]">{data?.name}</h2>
                 <p className="text-gray-500">{data?.email}</p>
-                <p className="text-sm text-blue-600">{data?.fullName}</p>
+                <p className="text-sm text-[#0E4D6B]">{data?.fullName}</p>
               </div>
             </div>
           </div>
 
           {/* Analytics */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-blue-800 mb-4">Event Distribution</h2>
+            <h2 className="text-lg font-bold text-[#0E4D6B] mb-4">Event Distribution</h2>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={analyticsData.eventStats}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
@@ -159,7 +159,7 @@ const DashboardHome = () => {
           </div>
 
           <div className="bg-white rounded-xl p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-blue-800 mb-4">Budget Distribution</h2>
+            <h2 className="text-lg font-bold text-[#0E4D6B] mb-4">Budget Distribution</h2>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie

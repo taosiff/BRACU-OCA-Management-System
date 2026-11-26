@@ -1,8 +1,8 @@
-import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { CiCalendarDate } from "react-icons/ci";
 import { AuthContext } from "../../../Context/AuthProvider";
-import useCurrentUser from "../../../Hooks/useCurrentUser";
+import useCurrentUser from "../../../hooks/useCurrentUser";
+import apiClient from "../../../utils/apiClient";
 
 const ClubAnalytics = () => {
   const { user } = useContext(AuthContext);
@@ -17,26 +17,31 @@ const ClubAnalytics = () => {
  
 
   useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_API_URL}/responded-events/${user?.email}`)
+    if (!user?.email) return;
+    apiClient
+      .get(`/responded-events/${user.email}`)
       .then((response) => {
         setEvents(response.data);
       })
       .catch((error) => {
         console.error(error);
       });
-    axios.get(`${import.meta.env.VITE_API_URL}/dashboard-info/${user?.email}`)
-     .then((response) => {
+    apiClient
+      .get(`/dashboard-info/${user.email}`)
+      .then((response) => {
         setClubInfo(response.data);
       })
-  }, [user?.email, setClubInfo]);
+      .catch((error) => {
+        console.error(error);
+      });
+  }, [user?.email]);
 
   return (
     <div>
       {/* header */}
       <div className="navbar p-0 mt-[-20px]">
         <div className="flex-1">
-          <a className="text-[1.62rem] font-bold text-[#303972] ">Club Activity</a>
+          <a className="text-[1.62rem] font-bold text-[#3A3F47] ">Club Activity</a>
         </div>
         <div className="flex-none gap-2">
           <div className="form-control">
@@ -81,7 +86,7 @@ const ClubAnalytics = () => {
           <div className="p-8 bg-white rounded-2xl w-[270px] h-[120px] justify-center items-start flex flex-col">
             <div className="flex items-center gap-3">
               <div className="avatar">
-                <div className="mask mask-squircle h-14 w-14 rounded-full bg-[#4D44B5] text-center flex flex-col justify-center items-center">
+                <div className="mask mask-squircle h-14 w-14 rounded-full bg-[#0E4D6B] text-center flex flex-col justify-center items-center">
                   <div className="ml-3 mt-2">
                     <svg
                       width="30"
@@ -100,7 +105,7 @@ const ClubAnalytics = () => {
               </div>
               <div>
                 <div className="text-sm text-[#A098AE]">Total Member</div>
-                <div className="font-bold text-2xl text-[#303972]">{clubInfo.totalMembers}</div>
+                <div className="font-bold text-2xl text-[#3A3F47]">{clubInfo.totalMembers}</div>
               </div>
             </div>
           </div>
@@ -108,7 +113,7 @@ const ClubAnalytics = () => {
           <div className="p-8 bg-white rounded-2xl w-[270px] h-[120px] justify-center items-start flex flex-col">
             <div className="flex items-center gap-3">
               <div className="avatar">
-                <div className="mask mask-squircle h-14 w-14 rounded-full bg-[#FB7D5B] text-center flex flex-col justify-center items-center">
+                <div className="mask mask-squircle h-14 w-14 rounded-full bg-[#0E4D6B] text-center flex flex-col justify-center items-center">
                   <div className="ml-[15px] mt-[14px]">
                     <svg
                       width="27.5"
@@ -128,7 +133,7 @@ const ClubAnalytics = () => {
               </div>
               <div>
                 <div className="text-sm text-[#A098AE]">Total Events</div>
-                <div className="font-bold text-2xl text-[#303972]">
+                <div className="font-bold text-2xl text-[#3A3F47]">
                   {events?.length}
                 </div>
                 {/* <div className="text-sm opacity-50">United States</div> */}
@@ -161,7 +166,7 @@ const ClubAnalytics = () => {
               <div className="flex gap-3 justify-center items-center">
                 <div>
                   <div className="text-sm text-[#A098AE]">Received</div>
-                  <div className="font-bold text-2xl text-[#303972]">
+                  <div className="font-bold text-2xl text-[#3A3F47]">
                     {totalBudgetSum}tk
                   </div>
                 </div>
@@ -207,7 +212,7 @@ const ClubAnalytics = () => {
                 ✕
               </button>
             </form>
-            <h3 className="font-bold text-xl text-[#303972]">
+            <h3 className="font-bold text-xl text-[#3A3F47]">
               {singleEvent.title}
             </h3>
             <div>
@@ -217,7 +222,7 @@ const ClubAnalytics = () => {
               <div className="flex gap-6">
                 {/* left side */}
                 <div>
-                  <h1 className="text-xl font-bold text-[#303972]">Details</h1>
+                  <h1 className="text-xl font-bold text-[#3A3F47]">Details</h1>
                   <ul>
                     <li>
                       Budget:{" "}
@@ -229,7 +234,7 @@ const ClubAnalytics = () => {
                 </div>
                 {/* right side */}
                 <div>
-                  <h1 className="text-xl font-bold text-[#303972]">
+                  <h1 className="text-xl font-bold text-[#3A3F47]">
                     Additional
                   </h1>
                   <ul>
@@ -243,7 +248,7 @@ const ClubAnalytics = () => {
         </dialog>
         {/* events with engagement and budget */}
         <div className="overflow-x-auto p-8 rounded-xl bg-white h-full overflow-y-scroll">
-          <h2 className="text-2xl font-bold text-[#303972]">Budget History</h2>
+          <h2 className="text-2xl font-bold text-[#3A3F47]">Budget History</h2>
           <table className="table">
             {/* head */}
             <thead>
@@ -264,11 +269,11 @@ const ClubAnalytics = () => {
                       document.getElementById("my_modal_3").showModal();
                       setSingleEvent(event);
                     }}
-                    className="text-base font-semibold text-[#303972] hover:cursor-pointer "
+                    className="text-base font-semibold text-[#3A3F47] hover:cursor-pointer "
                   >
                     {event.title}
                   </td>
-                  <td className="text-base font-semibold text-[#303972]">
+                  <td className="text-base font-semibold text-[#3A3F47]">
                     {`${event.budget ? event.budget + " Bdt" : "N/A"}`}
                   </td>
                   <td className="text-sm text-[#A098AE] flex gap-2 justify-center items-center">

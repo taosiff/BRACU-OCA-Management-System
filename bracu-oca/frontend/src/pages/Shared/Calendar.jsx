@@ -1,10 +1,10 @@
 import dayGridPlugin from "@fullcalendar/daygrid";
 import FullCalendar from "@fullcalendar/react";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { BsCalendarEvent } from "react-icons/bs";
 import Loading from "../../components/Loading";
 import { useEffect } from "react";
+import apiClient from "../../utils/apiClient";
 
 const Calendar = () => {
   const formatEvents = (events) => {
@@ -44,8 +44,7 @@ const Calendar = () => {
     queryKey: ["acceptedEvents"],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/accepted-events`);
-        console.log('API Response:', response.data); // Debug log
+        const response = await apiClient.get("/accepted-events");
         return response.data;
       } catch (error) {
         console.error('Error fetching events:', error);
@@ -71,11 +70,11 @@ const Calendar = () => {
       <div className="px-2 py-1">
         <div className="font-medium text-xs truncate">{event.title}</div>
         <div className="flex items-center gap-1 mt-0.5">
-          <span className="text-[10px] font-medium text-blue-600">
+          <span className="text-[10px] font-medium text-[#0E4D6B]">
             {event.extendedProps.club}
           </span>
           {event.extendedProps.room && (
-            <span className="text-[10px] bg-blue-200 text-blue-800 px-1 rounded">
+            <span className="text-[10px] bg-blue-200 text-[#0E4D6B] px-1 rounded">
               {event.extendedProps.room}
             </span>
           )}
@@ -104,7 +103,7 @@ const Calendar = () => {
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
-            <h1 className="text-2xl font-bold text-blue-800">Central Calendar</h1>
+            <h1 className="text-2xl font-bold text-[#0E4D6B]">Central Calendar</h1>
             
           </div>
         </div>
@@ -139,7 +138,7 @@ const Calendar = () => {
               eventClassNames={(info) => {
                 const status = info.event.extendedProps.response;
                 return [
-                  status === 'Accepted' ? 'bg-blue-600' : 'bg-gray-500',
+                  status === 'Accepted' ? 'bg-[#0E4D6B]' : 'bg-[#FEFFFA]0',
                   'text-white',
                   'border-0',
                   'rounded-md',
@@ -181,16 +180,16 @@ const Calendar = () => {
           <div className="space-y-6">
             {/* Event Indicators */}
             <div className="bg-white p-6 shadow-lg rounded-lg">
-              <h2 className="text-lg font-bold text-blue-800 mb-4">
+              <h2 className="text-lg font-bold text-[#0E4D6B] mb-4">
                 Event Indicators
               </h2>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                  <div className="w-3 h-3 bg-[#0E4D6B] rounded-full"></div>
                   <span className="text-sm text-blue-700">Scheduled Events</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-blue-800 rounded-full"></div>
+                  <div className="w-3 h-3 bg-[#0E4D6B] rounded-full"></div>
                   <span className="text-sm text-blue-700">Today</span>
                 </div>
               </div>
@@ -198,7 +197,7 @@ const Calendar = () => {
 
             {/* Upcoming Events */}
             <div className="bg-white p-6 shadow-lg rounded-lg">
-              <h2 className="text-lg font-bold text-blue-800 mb-4">
+              <h2 className="text-lg font-bold text-[#0E4D6B] mb-4">
                 Upcoming Events
               </h2>
               <div className="space-y-4">
@@ -209,12 +208,12 @@ const Calendar = () => {
                       className="p-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition"
                     >
                       <div className="flex items-start gap-4">
-                        <BsCalendarEvent className="text-blue-600 text-xl" />
+                        <BsCalendarEvent className="text-[#0E4D6B] text-xl" />
                         <div>
-                          <h3 className="font-bold text-blue-800">
+                          <h3 className="font-bold text-[#0E4D6B]">
                             {event.title}
                           </h3>
-                          <p className="text-sm text-blue-600">
+                          <p className="text-sm text-[#0E4D6B]">
                             {formatDate(event.start)}
                           </p>
                           <p className="text-sm text-blue-500">

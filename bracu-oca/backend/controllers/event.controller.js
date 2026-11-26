@@ -1,143 +1,119 @@
 const eventService = require("../services/event.service");
 
-const createEvent = async (req, res) => {
-  const data = req.body;
-  if (data.budget) data.budget = parseInt(data.budget);
-  if (data.guestPassesCount) data.guestPassesCount = parseInt(data.guestPassesCount);
-
+const createEvent = async (req, res, next) => {
   try {
-    const newEvent = await eventService.createEvent(data);
+    const newEvent = await eventService.createEvent(req.body || {}, req.decoded);
     if (newEvent.acknowledged) {
-      res.status(201).send("Event created successfully");
+      res.status(201).json({ message: "Event created successfully", insertedId: newEvent.insertedId });
     } else {
-      res.status(400).send("Event creation failed");
+      res.status(400).json({ message: "Event creation failed" });
     }
   } catch (error) {
-    res.status(500).send("Error creating event");
+    next(error);
   }
 };
 
-const getPendingEvents = async (req, res) => {
-  const email = req.params.email;
+const getPendingEvents = async (req, res, next) => {
   try {
-    const events = await eventService.getPendingEvents(email);
+    const events = await eventService.getPendingEvents(req.params.email);
     res.json(events);
   } catch (error) {
-    res.status(500).send("Error fetching pending events");
+    next(error);
   }
 };
 
-const getAllPendingEvents = async (req, res) => {
+const getAllPendingEvents = async (req, res, next) => {
   try {
     const events = await eventService.getAllPendingEvents();
     res.json(events);
   } catch (error) {
-    res.status(500).send("Error fetching all pending events");
+    next(error);
   }
 };
 
-const getRespondedEvents = async (req, res) => {
-  const email = req.params.email;
+const getRespondedEvents = async (req, res, next) => {
   try {
-    const events = await eventService.getRespondedEvents(email);
+    const events = await eventService.getRespondedEvents(req.params.email);
     res.json(events);
   } catch (error) {
-    res.status(500).send("Error fetching responded events");
+    next(error);
   }
 };
 
-const getAcceptedEvents = async (req, res) => {
+const getAcceptedEvents = async (req, res, next) => {
   try {
     const events = await eventService.getAcceptedEvents();
-    console.log('Events from service:', events);
-
-    if (!Array.isArray(events)) {
-      console.error('Events is not an array:', events);
-      return res.status(500).json({ error: 'Invalid events data' });
-    }
-
-    if (events.length === 0) {
-      console.log('No accepted events found');
-    }
-
     res.json(events);
   } catch (error) {
-    console.error('Error in getAcceptedEvents:', error);
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
-const getEventById = async (req, res) => {
-  const id = req.params.id;
+const getEventById = async (req, res, next) => {
   try {
-    const event = await eventService.getEventById(id);
-    if (event) {
-      res.json(event);
+    const event = await eventService.getEventById(req.params.id);
+    res.json(event);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateEvent = async (req, res, next) => {
+  try {
+    const result = await eventService.updateEvent(req.params.id, req.body || {});
+    if (result.matchedCount === 1) {
+      res.status(200).json({ message: "Event updated successfully" });
     } else {
-      res.status(404).send("Event not found");
+      res.status(404).json({ message: "Event not found" });
     }
   } catch (error) {
-    res.status(500).send("Error fetching event");
+    next(error);
   }
 };
 
-const updateEvent = async (req, res) => {
-  const id = req.params.id;
-  const data = req.body;
+const deleteEvent = async (req, res, next) => {
   try {
-    const result = await eventService.updateEvent(id, data);
-    if (result.modifiedCount === 1) {
-      res.status(200).send("Event updated successfully");
-    } else {
-      res.status(400).send("Failed to update event");
-    }
-  } catch (error) {
-    res.status(500).send("Error updating event");
-  }
-};
-
-const deleteEvent = async (req, res) => {
-  const id = req.params.eventId;
-  try {
-    const result = await eventService.deleteEvent(id);
+    const result = await eventService.deleteEvent(req.params.eventId, req.decoded);
     if (result.deletedCount === 1) {
-      res.status(200).send("Event deleted successfully");
+      res.status(200).json({ message: "Event deleted successfully" });
     } else {
-      res.status(400).send("Failed to delete event");
+      res.status(404).json({ message: "Event not found" });
     }
   } catch (error) {
-    res.status(500).send("Error deleting event");
+    next(error);
   }
 };
 
-const getTotalBudget = async (req, res) => {
+const getTotalBudget = async (req, res, next) => {
   try {
     const totalBudget = await eventService.getTotalBudget();
     res.json({ totalBudget });
   } catch (error) {
-    res.status(500).send("Error calculating total budget");
+    next(error);
   }
 };
 
-const checkRoomAvailability = async (req, res) => {
+const checkRoomAvailability = async (req, res, next) => {
   try {
-    const { date, roomNumber } = req.body;
+    const { date, roomNumber } = req.body || {};
+    if (!date || !roomNumber) {
+      return res.status(400).json({ message: "date and roomNumber are required" });
+    }
     const isAvailable = await eventService.checkRoomAvailability(date, roomNumber);
     res.status(200).json({ available: isAvailable });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
-const getAllEvents = async (req, res) => {
+const getAllEvents = async (req, res, next) => {
   try {
     const events = await eventService.getAllEvents();
     res.status(200).json(events);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
-
 
 module.exports = {
   createEvent,
@@ -150,5 +126,5 @@ module.exports = {
   deleteEvent,
   getTotalBudget,
   checkRoomAvailability,
-  getAllEvents
+  getAllEvents,
 };

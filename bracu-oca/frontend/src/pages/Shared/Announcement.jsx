@@ -1,11 +1,11 @@
-import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { BiTime } from "react-icons/bi";
 import { BsPerson } from "react-icons/bs";
 import { MdAdd, MdClose, MdDelete } from "react-icons/md";
 import Swal from "sweetalert2";
 import { AuthContext } from "../../Context/AuthProvider";
-import useCurrentUser from "../../Hooks/useCurrentUser";
+import useCurrentUser from "../../hooks/useCurrentUser";
+import apiClient from "../../utils/apiClient";
 
 // Helper function to format dates
 const formatDate = (date) => {
@@ -37,7 +37,7 @@ const Announcements = () => {
   // Fetch announcements from API
   const fetchAnnouncements = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/announcements`);
+      const response = await apiClient.get("/announcements");
       const sortedAnnouncements = response.data.sort(
         (a, b) => new Date(b.date) - new Date(a.date)
       );
@@ -50,10 +50,10 @@ const Announcements = () => {
   // Handle adding a new announcement
   const handleAdd = async (formData) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/add-announcement`, {
+      const response = await apiClient.post("/add-announcement", {
         ...formData,
         date: new Date(),
-        posterEmail: user.email,
+        posterEmail: user?.email,
       });
       if (response.data.insertedId) {
         fetchAnnouncements();
@@ -69,7 +69,7 @@ const Announcements = () => {
       Swal.fire({
         icon: "error",
         title: "Error Adding Announcement",
-        text: error.message,
+        text: error?.response?.data?.message || error.message,
       });
     }
   };
@@ -86,7 +86,7 @@ const Announcements = () => {
       });
 
       if (result.isConfirmed) {
-        await axios.delete(`${import.meta.env.VITE_API_URL}/delete-announcement/${id}`);
+        await apiClient.delete(`/delete-announcement/${id}`);
         fetchAnnouncements();
         Swal.fire({
           icon: "success",
@@ -100,30 +100,30 @@ const Announcements = () => {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: error.message,
+        text: error?.response?.data?.message || error.message,
       });
     }
   };
 
   // Filter announcements based on the active tab
   const filteredAnnouncements = announcements.filter((announcement) =>
-    activeTab === "all" ? true : announcement.posterEmail === user.email
+    activeTab === "all" ? true : announcement.posterEmail === user?.email
   );
 
   // Check if the user can delete an announcement
   const canDelete = (announcement) =>
-    currentUser?.role === "oca" || announcement.posterEmail === user.email;
+    currentUser?.role === "oca" || announcement.posterEmail === user?.email;
 
   return (
-    <div className="bg-gray-50 rounded-xl shadow-lg">
+    <div className="bg-[#FEFFFA] rounded-xl shadow-lg">
       {/* Header */}
       <div className="p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold text-blue-800">Announcements</h2>
+          <h2 className="text-lg font-bold text-[#0E4D6B]">Announcements</h2>
           {(currentUser?.role === "oca" || currentUser?.role === "club") && (
             <button
               onClick={() => setShowAddModal(true)}
-              className="p-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200"
+              className="p-2 bg-blue-100 text-[#0E4D6B] rounded-lg hover:bg-blue-200"
             >
               <MdAdd size={24} />
             </button>
@@ -135,7 +135,7 @@ const Announcements = () => {
           <button
             onClick={() => setActiveTab("all")}
             className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium ${
-              activeTab === "all" ? "bg-blue-800 text-white" : "text-gray-600 hover:bg-blue-100"
+              activeTab === "all" ? "bg-[#0E4D6B] text-white" : "text-gray-600 hover:bg-blue-100"
             }`}
           >
             All
@@ -143,7 +143,7 @@ const Announcements = () => {
           <button
             onClick={() => setActiveTab("our")}
             className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium ${
-              activeTab === "our" ? "bg-blue-800 text-white" : "text-gray-600 hover:bg-blue-100"
+              activeTab === "our" ? "bg-[#0E4D6B] text-white" : "text-gray-600 hover:bg-blue-100"
             }`}
           >
             Ours
@@ -161,7 +161,7 @@ const Announcements = () => {
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-semibold text-blue-800">{announcement.title}</h3>
+                  <h3 className="font-semibold text-[#0E4D6B]">{announcement.title}</h3>
                   <p className="text-gray-600 mt-2">{announcement.description}</p>
                   <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
@@ -221,7 +221,7 @@ const AddAnnouncementModal = ({ onClose, onSubmit }) => {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
       <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-bold text-blue-800">New Announcement</h2>
+          <h2 className="text-lg font-bold text-[#0E4D6B]">New Announcement</h2>
           <button
             onClick={onClose}
             className="p-2 text-gray-600 hover:bg-gray-200 rounded-lg"
@@ -260,7 +260,7 @@ const AddAnnouncementModal = ({ onClose, onSubmit }) => {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-[#0E4D6B] text-white rounded-lg hover:bg-blue-700"
             >
               Add Announcement
             </button>

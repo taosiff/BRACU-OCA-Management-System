@@ -11,6 +11,11 @@ export default {
       fontFamily: {
         poppins: "'Poppins', sans-serif",
       },
+      colors: {
+        ghost: "#FEFFFA",
+        coolgray: "#3A3F47",
+        freezing: "#0E4D6B",
+      },
     },
   },
   plugins: [
@@ -20,15 +25,15 @@ export default {
     themes: [
       {
         messi: {
-          primary: "#5BC0EB", // Argentina sky blue
-          secondary: "#FFFFFF",
-          accent: "#FFD700", // gold accent
-          neutral: "#1B1F23",
-          "base-100": "#FFFFFF",
-          info: "#93C5FD",
-          success: "#22C55E",
-          warning: "#F59E0B",
-          error: "#EF4444",
+          primary: "#0E4D6B", // Freezing Blue
+          secondary: "#FEFFFA", // Ghost White
+          accent: "#3A3F47", // Cool Gray
+          neutral: "#3A3F47",
+          "base-100": "#FEFFFA",
+          info: "#0E4D6B",
+          success: "#16A34A",
+          warning: "#D97706",
+          error: "#DC2626",
         },
       },
       "light",

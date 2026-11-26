@@ -1,41 +1,43 @@
 const clubService = require("../services/club.service");
 
-const getClubList = async (req, res) => {
+const getClubList = async (req, res, next) => {
   try {
     const clubs = await clubService.getClubList();
-    res.send(clubs);
+    res.json(clubs);
   } catch (error) {
-    res.status(500).send("Error fetching club list");
+    next(error);
   }
 };
 
-const getAllClubs = async (req, res) => {
+const getAllClubs = async (req, res, next) => {
   try {
     const clubs = await clubService.getAllClubs();
-    res.send(clubs);
+    res.json(clubs);
   } catch (error) {
-    res.status(500).send("Error fetching club list");
-  }
-}
-
-const updateClub = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updatedData = req.body;
-    const updatedClub = await clubService.updateClub(id, updatedData);
-    res.status(200).json(updatedClub);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
-const getCurrentUser = async (req, res) => {
+const updateClub = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const updatedClub = await clubService.updateClub(id, req.body || {}, req.decoded);
+    res.status(200).json(updatedClub);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getCurrentUser = async (req, res, next) => {
   try {
     const { email } = req.params;
     const user = await clubService.getCurrentUser(email);
+    if (!user) {
+      return res.status(404).json({ message: "User profile not found" });
+    }
     res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
@@ -43,5 +45,5 @@ module.exports = {
   getClubList,
   getAllClubs,
   updateClub,
-  getCurrentUser
+  getCurrentUser,
 };

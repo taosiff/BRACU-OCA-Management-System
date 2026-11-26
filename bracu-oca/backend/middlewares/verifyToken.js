@@ -1,21 +1,55 @@
 const jwt = require("jsonwebtoken");
 
-const verifyToken = (req, res, next) => {
-  if (!req.headers.authorization) {
-    return res.status(401).send("Access Denied");
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET || process.env.JWT_Secret;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("JWT_SECRET environment variable is required in production");
+    }
+    return "devsecret";
   }
-  const token = req.headers.authorization.split(" ")[1];
+  return secret;
+}
+
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Access Denied: Missing token" });
+  }
+  const token = authHeader.split(" ")[1];
   if (!token) {
-    return res.status(401).send("Access Denied");
+    return res.status(401).json({ message: "Access Denied: Missing token" });
   }
 
-  jwt.verify(token, process.env.JWT_Secret, (err, decoded) => {
-    if (err) {
-      return res.status(401).send("Access Denied");
-    }
+  try {
+    const decoded = jwt.verify(token, getJwtSecret());
     req.decoded = decoded;
     next();
-  });
+  } catch {
+    return res.status(401).json({ message: "Access Denied: Invalid or expired token" });
+  }
+};
+
+const requireRole = (...allowedRoles) => (req, res, next) => {
+  if (!req.decoded || !allowedRoles.includes(req.decoded.role)) {
+    return res.status(403).json({ message: "Forbidden: Insufficient permissions" });
+  }
+  next();
+};
+
+const requireSelfOrOca = (paramName = "email") => (req, res, next) => {
+  const targetEmail = req.params[paramName];
+  if (!req.decoded) {
+    return res.status(401).json({ message: "Access Denied" });
+  }
+  if (req.decoded.role === "oca" || req.decoded.email === targetEmail) {
+    return next();
+  }
+  return res.status(403).json({ message: "Forbidden: Access restricted to own account or OCA" });
 };
 
 module.exports = verifyToken;
+module.exports.verifyToken = verifyToken;
+module.exports.requireRole = requireRole;
+module.exports.requireSelfOrOca = requireSelfOrOca;
+module.exports.getJwtSecret = getJwtSecret;

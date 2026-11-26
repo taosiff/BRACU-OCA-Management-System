@@ -1,23 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { useContext } from "react";
 import { AuthContext } from "../Context/AuthProvider";
+import apiClient from "../utils/apiClient";
 
 const useCurrentUser = () => {
-    const {user} = useContext(AuthContext)
+  const { user } = useContext(AuthContext);
+  const mail = user?.email;
 
-    const mail = user?.email;
+  const { data: currentUser = {}, refetch: currentUserRefetch } = useQuery({
+    queryKey: ["currentUser", mail],
+    enabled: !!mail,
+    queryFn: async () => {
+      const res = await apiClient.get(`/current-user/${mail}`);
+      return res.data;
+    },
+  });
 
-    const {data : currentUser = {}, refetch: currentUserRefetch} = useQuery({
-        queryKey: ['currentUser', user?.email],
-        queryFn: async () => {
-            const res = await axios.get(`${import.meta.env.VITE_API_URL}/current-user/${mail}`);
-            return res.data
-        },
-    }
-    )
-
-    return [currentUser, currentUserRefetch]
+  return [currentUser, currentUserRefetch];
 };
 
 export default useCurrentUser;

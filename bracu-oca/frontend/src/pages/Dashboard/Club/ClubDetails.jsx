@@ -1,12 +1,12 @@
-import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from 'react-hook-form';
 import { BiArrowBack } from "react-icons/bi";
 import { MdEdit, MdEmail, MdPeople } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import useAllClubs from "../../../Hooks/useAllClubs";
-import useCurrentUser from "../../../Hooks/useCurrentUser";
+import useAllClubs from "../../../hooks/useAllClubs";
+import useCurrentUser from "../../../hooks/useCurrentUser";
+import apiClient from "../../../utils/apiClient";
 
 const PersonCard = ({ person, type }) => {
   return (
@@ -14,7 +14,7 @@ const PersonCard = ({ person, type }) => {
       {/* Top Accent Line - Subtle indicator */}
       <div 
         className={`absolute top-0 left-0 right-0 h-1 rounded-t-lg
-          ${type === 'advisor' ? 'bg-[#4c44b3]' : type === 'panel' ? 'bg-[#FB7D5B]' : 'bg-gray-200'}`}
+          ${type === 'advisor' ? 'bg-[#0E4D6B]' : type === 'panel' ? 'bg-[#0E4D6B]' : 'bg-gray-200'}`}
       />
       
       <div className="flex flex-col items-center">
@@ -31,13 +31,13 @@ const PersonCard = ({ person, type }) => {
 
         {/* Content */}
         <div className="text-center space-y-1">
-          <h3 className="text-lg font-bold text-[#303972]">{person.name}</h3>
+          <h3 className="text-lg font-bold text-[#3A3F47]">{person.name}</h3>
           
           {/* Role Tag */}
           <div className="inline-flex items-center">
             <span className={`px-2 py-1 rounded-md text-xs font-medium 
-              ${type === 'advisor' ? 'bg-[#4c44b3]/5 text-[#4c44b3]' : 
-                type === 'panel' ? 'bg-[#FB7D5B]/5 text-[#FB7D5B]' : 
+              ${type === 'advisor' ? 'bg-[#0E4D6B]/5 text-[#0E4D6B]' : 
+                type === 'panel' ? 'bg-[#0E4D6B]/5 text-[#0E4D6B]' : 
                 'bg-gray-100 text-gray-600'}`}>
               {person.role}
             </span>
@@ -75,6 +75,7 @@ const ClubDetails = () => {
     register,
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -89,6 +90,22 @@ const ClubDetails = () => {
       totalMembers: club?.totalMembers || 0,
     },
   });
+
+  useEffect(() => {
+    if (club) {
+      reset({
+        name: club.name || '',
+        fullName: club.fullName || '',
+        description: club.description || '',
+        email: club.email || '',
+        photo_url: club.photo_url || '',
+        advisors: club.advisors || [],
+        panel: club.panel || [],
+        notableAlumnis: club.notableAlumnis || [],
+        totalMembers: club.totalMembers || 0,
+      });
+    }
+  }, [club, reset]);
 
   const {
     fields: advisorFields,
@@ -119,30 +136,33 @@ const ClubDetails = () => {
 
   const onSubmit = async (data) => {
     try {
-
-      await axios.patch(`${import.meta.env.VITE_API_URL}/clubs-update/${club._id}`, data);
+      await apiClient.patch(`/clubs-update/${club._id}`, data);
       setIsModalOpen(false);
       allClubsRefetch();
-      // Handle successful update
+      Swal.fire({
+        icon: 'success',
+        title: 'Club updated',
+        timer: 1500,
+        showConfirmButton: false,
+      });
     } catch (error) {
-      // Handle error
       Swal.fire({
         icon: 'error',
         title: 'Oops...',
-        text: {error},
-      })
+        text: error?.response?.data?.message || error.message || 'Failed to update club',
+      });
     }
   };
 
   return (
-    <div className="min-h-screen bg-[rgb(240,241,255)]">
+    <div className="min-h-screen bg-[#F4F6F8]">
       {/* Header */}
       {!editAccess && (
         <div className="navbar p-0 mt-[-20px] mb-4">
           <div className="flex-1">
             <button 
               onClick={() => navigate(-1)} 
-              className="flex items-center gap-1 text-[#4c44b3] hover:text-[#FB7D5B] transition-colors"
+              className="flex items-center gap-1 text-[#0E4D6B] hover:text-[#0E4D6B] transition-colors"
             >
               <BiArrowBack className="text-lg" /> Back to Clubs
             </button>
@@ -157,7 +177,7 @@ const ClubDetails = () => {
           <div className="sticky top-6 space-y-4">
             {/* Club Card */}
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="h-28 bg-gradient-to-r from-[#4c44b3] to-[#303972]" />
+              <div className="h-28 bg-gradient-to-r from-[#0E4D6B] to-[#3A3F47]" />
               <div className="px-4 pb-4 -mt-12">
                 <div className="flex flex-col items-center">
                   <img
@@ -165,9 +185,9 @@ const ClubDetails = () => {
                     alt={club?.name}
                     className="w-24 h-24 rounded-lg object-cover ring-4 ring-white mb-2"
                   />
-                  <h1 className="text-xl font-bold text-[#303972] mb-1">{club?.name}</h1>
+                  <h1 className="text-xl font-bold text-[#3A3F47] mb-1">{club?.name}</h1>
                   <h2 className="text-gray-600 text-sm mb-3">{club?.fullName}</h2>
-                  <div className="flex items-center gap-1 text-gray-600 bg-gray-50 px-2 py-1 rounded-lg">
+                  <div className="flex items-center gap-1 text-gray-600 bg-[#FEFFFA] px-2 py-1 rounded-lg">
                     <MdEmail className="h-4 w-4" />
                     <span className="text-sm">{club?.email}</span>
                   </div>
@@ -179,12 +199,12 @@ const ClubDetails = () => {
             {club?.totalMembers && (
               <div className="bg-white rounded-lg shadow-sm p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-[#4c44b3]/5 rounded-lg">
-                    <MdPeople className="h-6 w-6 text-[#4c44b3]" />
+                  <div className="p-3 bg-[#0E4D6B]/5 rounded-lg">
+                    <MdPeople className="h-6 w-6 text-[#0E4D6B]" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Total Members</p>
-                    <p className="text-2xl font-bold text-[#303972]">
+                    <p className="text-2xl font-bold text-[#3A3F47]">
                       {club?.totalMembers}
                     </p>
                   </div>
@@ -196,12 +216,12 @@ const ClubDetails = () => {
 {editAccess && (
              <div className="bg-white rounded-xl shadow-sm p-6">
                <div className="flex items-center gap-4">
-                 <div className="p-4 bg-[#FB7D5B]/5 rounded-xl">
-                   <MdEdit className="h-4 w-4 text-[#FB7D5B]" />
+                 <div className="p-4 bg-[#0E4D6B]/5 rounded-xl">
+                   <MdEdit className="h-4 w-4 text-[#0E4D6B]" />
                  </div>
                  <div>
                    <p className="text-sm text-gray-500">Change Information</p>
-                   <p className="text-xl font-bold text-[#303972]">
+                   <p className="text-xl font-bold text-[#3A3F47]">
                    <button onClick={() => setIsModalOpen(true)}>Edit</button>
                    </p>
                  </div>
@@ -216,7 +236,7 @@ const ClubDetails = () => {
        {isModalOpen && (
        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
          <div className="bg-white rounded-xl p-8 max-w-lg w-full max-h-[70vh] overflow-y-auto relative">
-           <h2 className="text-2xl font-bold text-[#303972] ">Edit Club Information</h2>
+           <h2 className="text-2xl font-bold text-[#3A3F47] ">Edit Club Information</h2>
            <p className="text-xs text-gray-500 mb-6">If you want an empty form, just refresh the page and open the form again.</p>
            <button className="absolute text-xl top-6 right-6 font-bold text-red-400" onClick={() => setIsModalOpen(false)}>x</button>
            <form onSubmit={handleSubmit(onSubmit)}>
@@ -464,7 +484,7 @@ const ClubDetails = () => {
              <div className="mt-6">
                <button
                  type="submit"
-                 className="px-6 py-2 bg-[#4c44b3] text-white rounded-md"
+                 className="px-6 py-2 bg-[#0E4D6B] text-white rounded-md"
                >
                  Save Changes
                </button>
@@ -483,7 +503,7 @@ const ClubDetails = () => {
           {/* Description */}
           {club?.description && (
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-bold text-[#303972] mb-3">About</h2>
+              <h2 className="text-xl font-bold text-[#3A3F47] mb-3">About</h2>
               <div className="prose max-w-none">
                 <p className="text-gray-600 leading-relaxed">
                   {club?.description}
@@ -495,7 +515,7 @@ const ClubDetails = () => {
           {/* Advisors */}
           {club?.advisors?.length > 0 && (
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-bold text-[#303972] mb-4">Club Advisors</h2>
+              <h2 className="text-xl font-bold text-[#3A3F47] mb-4">Club Advisors</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {club?.advisors?.map((advisor, index) => (
                   <PersonCard 
@@ -511,7 +531,7 @@ const ClubDetails = () => {
           {/* Panel Members */}
           {club?.panel?.length > 0 && (
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-bold text-[#303972] mb-4">
+              <h2 className="text-xl font-bold text-[#3A3F47] mb-4">
                 Executive Committee
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -529,7 +549,7 @@ const ClubDetails = () => {
           {/* Notable Alumni */}
           {club?.notableAlumnis?.length > 0 && (
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-bold text-[#303972] mb-4">
+              <h2 className="text-xl font-bold text-[#3A3F47] mb-4">
                 Notable Alumni
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

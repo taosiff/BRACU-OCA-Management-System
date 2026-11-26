@@ -1,10 +1,10 @@
-import axios from "axios";
 import { useMemo, useState } from 'react';
 import { BiSearch } from "react-icons/bi";
 import { BsEye } from "react-icons/bs";
 import Swal from "sweetalert2";
-import useAllPendingRequests from "../../../Hooks/useAllPendingRequests";
+import useAllPendingRequests from "../../../hooks/useAllPendingRequests";
 import Loading from "../../../components/Loading";
+import apiClient from "../../../utils/apiClient";
 
 const Approval = () => {
   const [allPendingRequests, allPendingRequestsRefetch, isLoading] = useAllPendingRequests();
@@ -24,7 +24,7 @@ const Approval = () => {
 
   const handleView = async (id) => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/events/${id}`);
+      const response = await apiClient.get(`/events/${id}`);
       const event = response.data;
   
       // Helper function to format date
@@ -38,48 +38,57 @@ const Approval = () => {
         });
       };
   
+      // Escape HTML to prevent XSS in SweetAlert modal rendering
+      const escapeHtml = (str) =>
+        String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+
       // Helper function to check and format values
       const formatValue = (value, type = 'text') => {
         if (value === null || value === undefined || value === '') {
           return 'Not specified';
         }
         if (type === 'currency' && value) {
-          return `৳${value.toLocaleString()}`;
+          return `৳${Number(value).toLocaleString()}`;
         }
         if (type === 'number') {
-          return value.toString();
+          return escapeHtml(value.toString());
         }
-        return value;
+        return escapeHtml(value);
       };
   
       const modalContent = `
         <div class="text-left p-4">
           <div class="grid gap-4">
             <!-- Club Info Section -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <h3 class="text-[#303972] font-semibold mb-2 text-lg border-b pb-2">Club Information</h3>
+            <div class="bg-[#FEFFFA] p-4 rounded-lg">
+              <h3 class="text-[#3A3F47] font-semibold mb-2 text-lg border-b pb-2">Club Information</h3>
               <div class="grid gap-2">
               
-                <p class="text-sm"><span class="font-medium text-[#303972]">Club:</span> 
+                <p class="text-sm"><span class="font-medium text-[#3A3F47]">Club:</span> 
                   <span class="text-gray-600">${formatValue(event.clubMail.split('@')[0].toUpperCase())}</span>
                 </p>
-                <p class="text-sm"><span class="font-medium text-[#303972]">Event Date:</span> 
+                <p class="text-sm"><span class="font-medium text-[#3A3F47]">Event Date:</span> 
                   <span class="text-gray-600">${formatDate(event.date)}</span>
                 </p>
               </div>
             </div>
   
             <!-- Event Details Section -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <h3 class="text-[#303972] font-semibold mb-2 text-lg border-b pb-2">Event Details</h3>
+            <div class="bg-[#FEFFFA] p-4 rounded-lg">
+              <h3 class="text-[#3A3F47] font-semibold mb-2 text-lg border-b pb-2">Event Details</h3>
               <div class="grid gap-3">
                 <div>
-                  <p class="text-sm font-medium text-[#303972]">Description:</p>
+                  <p class="text-sm font-medium text-[#3A3F47]">Description:</p>
                   <p class="text-sm text-gray-600 mt-1">${formatValue(event.description)}</p>
                 </div>
                 ${event.needsRoom ? `
                   <div>
-                    <p class="text-sm font-medium text-[#303972]">Room Needed:</p>
+                    <p class="text-sm font-medium text-[#3A3F47]">Room Needed:</p>
                     <p class="text-sm text-gray-600 mt-1">${formatValue(event.roomNumber)}</p>
                   </div>
                 ` : ''}
@@ -88,15 +97,15 @@ const Approval = () => {
   
             ${event.needsBudget ? `
               <!-- Budget Section -->
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <h3 class="text-[#303972] font-semibold mb-2 text-lg border-b pb-2">Budget Information</h3>
+              <div class="bg-[#FEFFFA] p-4 rounded-lg">
+                <h3 class="text-[#3A3F47] font-semibold mb-2 text-lg border-b pb-2">Budget Information</h3>
                 <div class="grid gap-3">
                   <div>
-                    <p class="text-sm font-medium text-[#303972]">Budget Amount:</p>
+                    <p class="text-sm font-medium text-[#3A3F47]">Budget Amount:</p>
                     <p class="text-sm text-gray-600 mt-1">${formatValue(event.budget, 'currency')}</p>
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-[#303972]">Budget Details:</p>
+                    <p class="text-sm font-medium text-[#3A3F47]">Budget Details:</p>
                     <p class="text-sm text-gray-600 mt-1">${formatValue(event.budgetDetails)}</p>
                   </div>
                 </div>
@@ -105,17 +114,17 @@ const Approval = () => {
   
             ${event.needsGuestPasses ? `
               <!-- Guest Passes Section -->
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <h3 class="text-[#303972] font-semibold mb-2 text-lg border-b pb-2">Guest Passes</h3>
-                <p class="text-sm"><span class="font-medium text-[#303972]">Number of Passes:</span> 
+              <div class="bg-[#FEFFFA] p-4 rounded-lg">
+                <h3 class="text-[#3A3F47] font-semibold mb-2 text-lg border-b pb-2">Guest Passes</h3>
+                <p class="text-sm"><span class="font-medium text-[#3A3F47]">Number of Passes:</span> 
                   <span class="text-gray-600">${formatValue(event.guestPassesCount, 'number')}</span>
                 </p>
               </div>
             ` : ''}
   
             <!-- Additional Requirements Section -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <h3 class="text-[#303972] font-semibold mb-2 text-lg border-b pb-2">Additional Requirements</h3>
+            <div class="bg-[#FEFFFA] p-4 rounded-lg">
+              <h3 class="text-[#3A3F47] font-semibold mb-2 text-lg border-b pb-2">Additional Requirements</h3>
               <p class="text-sm text-gray-600">${formatValue(event.additionalRequirements)}</p>
             </div>
           </div>
@@ -123,10 +132,10 @@ const Approval = () => {
       `;
   
       await Swal.fire({
-        title: `<h2 class="text-xl font-bold text-[#303972]">${event.title}</h2>`,
+        title: `<h2 class="text-xl font-bold text-[#3A3F47]">${escapeHtml(event.title || '')}</h2>`,
         html: modalContent,
         confirmButtonText: 'Close',
-        confirmButtonColor: '#4c44b3',
+        confirmButtonColor: '#0E4D6B',
         customClass: {
           container: 'custom-swal-container',
           popup: 'custom-swal-popup',
@@ -146,7 +155,7 @@ const Approval = () => {
         icon: 'error',
         title: 'Error',
         text: 'Failed to load event details',
-        confirmButtonColor: '#4c44b3'
+        confirmButtonColor: '#0E4D6B'
       });
     }
   };
@@ -172,7 +181,7 @@ const Approval = () => {
         };
   
         try {
-          await axios.put(`${import.meta.env.VITE_API_URL}/events/${id}`, updatedEvent);
+          await apiClient.put(`/events/${id}`, updatedEvent);
           allPendingRequestsRefetch();
           Swal.fire('Accepted', 'The event has been accepted.', 'success');
         } catch (error) {
@@ -212,7 +221,7 @@ const Approval = () => {
           feedback
         };
 
-        await axios.put(`${import.meta.env.VITE_API_URL}/events/${id}`, updatedEvent);
+        await apiClient.put(`/events/${id}`, updatedEvent);
         allPendingRequestsRefetch();
         Swal.fire('Rejected', 'The event has been rejected.', 'success');
       }
@@ -232,7 +241,7 @@ const Approval = () => {
       <div className="navbar pb-3 mt-[-18px]">
         <div className="flex-1">
           <div>
-            <a className="text-[1.62rem] font-bold text-[#303972]">Approval Request</a>
+            <a className="text-[1.62rem] font-bold text-[#3A3F47]">Approval Request</a>
             <p className="text-sm text-gray-500 mt-1">
               Showing {filteredRequests.length} of {allPendingRequests.length} requests
             </p>
@@ -247,11 +256,11 @@ const Approval = () => {
                 placeholder="Search requests..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 w-64 rounded-xl bg-white border-2 border-[#4c44b3] border-opacity-30 
-                         focus:outline-none focus:ring-2 focus:ring-[#4c44b3] focus:border-transparent
+                className="pl-10 pr-4 py-2 w-64 rounded-xl bg-white border-2 border-[#0E4D6B] border-opacity-30 
+                         focus:outline-none focus:ring-2 focus:ring-[#0E4D6B] focus:border-transparent
                          placeholder-gray-400 text-gray-600"
               />
-              <BiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#4c44b3] h-5 w-5" />
+              <BiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#0E4D6B] h-5 w-5" />
             </div>
           </div>
           
@@ -260,12 +269,12 @@ const Approval = () => {
             <div
               tabIndex={0}
               role="button"
-              className="btn btn-ghost btn-circle avatar ring-2 ring-[#4c44b3] ring-opacity-30"
+              className="btn btn-ghost btn-circle avatar ring-2 ring-[#0E4D6B] ring-opacity-30"
             >
               <div className="w-10 rounded-full">
                 <img
                   alt="User Avatar"
-                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW710hPlb48q-g88rWvxavK9XmOeFOXU1ZMA&s"
+                  src="/images/logos/oca.svg"
                 />
               </div>
             </div>
@@ -279,12 +288,12 @@ const Approval = () => {
       <table className="table w-full">
         {/* Table Header */}
         <thead>
-          <tr className="bg-[#4c44b3] bg-opacity-5">
-            <th className="text-[#303972] font-semibold px-6 py-4 text-sm rounded-tl-xl">#</th>
-            <th className="text-[#303972] font-semibold px-6 py-4 text-sm">Title</th>
-            <th className="text-[#303972] font-semibold px-6 py-4 text-sm">Club</th>
-            <th className="text-[#303972] font-semibold px-6 py-4 text-sm">Date</th>
-            <th className="text-[#303972] font-semibold px-6 py-4 text-sm text-center rounded-tr-xl">
+          <tr className="bg-[#0E4D6B] bg-opacity-5">
+            <th className="text-[#3A3F47] font-semibold px-6 py-4 text-sm rounded-tl-xl">#</th>
+            <th className="text-[#3A3F47] font-semibold px-6 py-4 text-sm">Title</th>
+            <th className="text-[#3A3F47] font-semibold px-6 py-4 text-sm">Club</th>
+            <th className="text-[#3A3F47] font-semibold px-6 py-4 text-sm">Date</th>
+            <th className="text-[#3A3F47] font-semibold px-6 py-4 text-sm text-center rounded-tr-xl">
               Actions
             </th>
           </tr>
@@ -302,7 +311,7 @@ const Approval = () => {
             return (
               <tr 
                 key={event._id} 
-                className="hover:bg-gray-50/50 transition-colors duration-200"
+                className="hover:bg-[#FEFFFA]/50 transition-colors duration-200"
               >
                 <td className="px-6 py-4 text-gray-600 font-medium">
                   {String(index + 1).padStart(2, '0')}
@@ -310,7 +319,7 @@ const Approval = () => {
                 
                 <td className="px-6 py-4">
                   <div className="flex flex-col">
-                    <span className="font-semibold text-[#303972] text-base">
+                    <span className="font-semibold text-[#3A3F47] text-base">
                       {event?.title}
                     </span>
                     <span className="text-xs text-gray-500 mt-1">
@@ -325,14 +334,14 @@ const Approval = () => {
 
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#4c44b3] bg-opacity-10 flex items-center justify-center">
-                      <span className="text-[#4c44b3] font-semibold">
+                    <div className="w-10 h-10 rounded-xl bg-[#0E4D6B] bg-opacity-10 flex items-center justify-center">
+                      <span className="text-[#0E4D6B] font-semibold">
                         {clubNameParts?.[0]?.charAt(0)?.toUpperCase()}
                         {clubNameParts?.[1]?.charAt(0)?.toUpperCase()}
                       </span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[#303972] font-medium text-sm">
+                      <span className="text-[#3A3F47] font-medium text-sm">
                         {formattedClubName}
                       </span>
                       <span className="text-gray-500 text-xs">
@@ -344,7 +353,7 @@ const Approval = () => {
 
                 <td className="px-6 py-4">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm 
-                               bg-[#4c44b3] bg-opacity-10 text-[#4c44b3] font-medium">
+                               bg-[#0E4D6B] bg-opacity-10 text-[#0E4D6B] font-medium">
                     {new Date(event?.date).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -358,10 +367,10 @@ const Approval = () => {
                     {/* View Button */}
                     <button 
                       onClick={() => handleView(event._id)} 
-                      className="group relative px-3 py-1.5 rounded-lg bg-[#FB7D5B]/10 hover:bg-[#FB7D5B]/20 
+                      className="group relative px-3 py-1.5 rounded-lg bg-[#0E4D6B]/10 hover:bg-[#0E4D6B]/20 
                                transition-all duration-200 cursor-pointer"
                     >
-                      <BsEye className="text-lg text-[#FB7D5B]" />
+                      <BsEye className="text-lg text-[#0E4D6B]" />
                       <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 
                                    bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 
                                    group-hover:opacity-100 transition-opacity duration-200">
@@ -372,8 +381,8 @@ const Approval = () => {
                     {/* Accept Button */}
                     <button 
                       onClick={() => handleAccept(event._id)} 
-                      className="px-4 py-1.5 rounded-lg text-sm font-medium text-[#4c44b3] 
-                               bg-[#4c44b3]/10 hover:bg-[#4c44b3]/20 transition-all duration-200
+                      className="px-4 py-1.5 rounded-lg text-sm font-medium text-[#0E4D6B] 
+                               bg-[#0E4D6B]/10 hover:bg-[#0E4D6B]/20 transition-all duration-200
                                flex items-center gap-2"
                     >
                       <span className="h-2 w-2 rounded-full bg-green-500"></span>
@@ -383,8 +392,8 @@ const Approval = () => {
                     {/* Reject Button */}
                     <button 
                       onClick={() => handleReject(event._id)} 
-                      className="px-4 py-1.5 rounded-lg text-sm font-medium text-[#FB7D5B]
-                               bg-[#FB7D5B]/10 hover:bg-[#FB7D5B]/20 transition-all duration-200
+                      className="px-4 py-1.5 rounded-lg text-sm font-medium text-[#0E4D6B]
+                               bg-[#0E4D6B]/10 hover:bg-[#0E4D6B]/20 transition-all duration-200
                                flex items-center gap-2"
                     >
                       <span className="h-2 w-2 rounded-full bg-red-500"></span>
@@ -400,7 +409,7 @@ const Approval = () => {
     </div>
   ) : (
           <div className="text-center py-10">
-            <div className="text-[#4c44b3] text-lg font-medium">No requests found</div>
+            <div className="text-[#0E4D6B] text-lg font-medium">No requests found</div>
             <p className="text-gray-500 mt-2">
               {searchQuery 
                 ? "Try adjusting your search terms" 

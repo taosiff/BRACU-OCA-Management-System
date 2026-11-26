@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { BiSearch } from "react-icons/bi";
 import { HiOutlineMail } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import useAllClubs from "../../../Hooks/useAllClubs";
+import useAllClubs from "../../../hooks/useAllClubs";
 
 const ClubInfo = () => {
   const [allClubs, allClubsRefetch, isLoading] = useAllClubs();
@@ -13,9 +13,9 @@ const ClubInfo = () => {
     return allClubs.filter((club) => {
       const searchTerm = searchQuery.toLowerCase();
       return (
-        club.name.toLowerCase().includes(searchTerm) ||
-        club.fullName.toLowerCase().includes(searchTerm) ||
-        club.email.toLowerCase().includes(searchTerm) ||
+        (club.name || "").toLowerCase().includes(searchTerm) ||
+        (club.fullName || "").toLowerCase().includes(searchTerm) ||
+        (club.email || "").toLowerCase().includes(searchTerm) ||
         (club.department && club.department.toLowerCase().includes(searchTerm))
       );
     });
@@ -34,7 +34,7 @@ const ClubInfo = () => {
       <div className="navbar pb-3 mt-[-18px]">
         <div className="flex-1">
           <div>
-            <a className="text-[1.62rem] font-bold text-[#303972]">All Clubs</a>
+            <a className="text-[1.62rem] font-bold text-[#3A3F47]">All Clubs</a>
             <p className="text-sm text-gray-500 mt-1">
               Showing {filteredClubs.length} of {allClubs.length} clubs
             </p>
@@ -49,11 +49,11 @@ const ClubInfo = () => {
                 placeholder="Search clubs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 w-64 rounded-xl bg-white border-2 border-[#4c44b3] border-opacity-30 
-                         focus:outline-none focus:ring-2 focus:ring-[#4c44b3] focus:border-transparent
+                className="pl-10 pr-4 py-2 w-64 rounded-xl bg-white border-2 border-[#0E4D6B] border-opacity-30 
+                         focus:outline-none focus:ring-2 focus:ring-[#0E4D6B] focus:border-transparent
                          placeholder-gray-400 text-gray-600"
               />
-              <BiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#4c44b3] h-5 w-5" />
+              <BiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#0E4D6B] h-5 w-5" />
             </div>
           </div>
 
@@ -62,12 +62,12 @@ const ClubInfo = () => {
             <div
               tabIndex={0}
               role="button"
-              className="btn btn-ghost btn-circle avatar ring-2 ring-[#4c44b3] ring-opacity-30"
+              className="btn btn-ghost btn-circle avatar ring-2 ring-[#0E4D6B] ring-opacity-30"
             >
               <div className="w-10 rounded-full">
                 <img
                   alt="User Avatar"
-                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW710hPlb48q-g88rWvxavK9XmOeFOXU1ZMA&s"
+                  src="/images/logos/oca.svg"
                 />
               </div>
             </div>
@@ -111,7 +111,7 @@ const ClubInfo = () => {
                 <div className="space-y-2">
                   {/* Email */}
                   <div className="flex items-center gap-2 text-gray-600">
-                    <HiOutlineMail className="h-4 w-4 text-[#4c44b3]" />
+                    <HiOutlineMail className="h-4 w-4 text-[#0E4D6B]" />
                     <span className="text-sm truncate" title={club.email}>
                       {club.email}
                     </span>
@@ -135,7 +135,7 @@ const ClubInfo = () => {
         {/* No Results Message */}
         {filteredClubs.length === 0 && (
           <div className="col-span-full text-center py-10">
-            <div className="text-[#4c44b3] text-lg font-medium">
+            <div className="text-[#0E4D6B] text-lg font-medium">
               No clubs found
             </div>
             <p className="text-gray-500 mt-2">

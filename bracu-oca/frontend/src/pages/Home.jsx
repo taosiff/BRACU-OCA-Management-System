@@ -5,7 +5,6 @@ import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTwitter } from "react-icons/f
 import { MdApproval } from "react-icons/md";
 import { Link } from "react-router-dom";
 
-
 const features = [
   {
     icon: BsCalendarEvent,
@@ -46,35 +45,19 @@ const features = [
 ];
 
 const socialMedia = [
-  {
-    name: "Facebook",
-    icon: FaFacebookF,
-    link: "https://facebook.com",
-  },
-  {
-    name: "Twitter",
-    icon: FaTwitter,
-    link: "https://twitter.com",
-  },
-  {
-    name: "Instagram",
-    icon: FaInstagram,
-    link: "https://instagram.com",
-  },
-  {
-    name: "LinkedIn",
-    icon: FaLinkedinIn,
-    link: "https://linkedin.com",
-  },
-]
+  { name: "Facebook", icon: FaFacebookF, link: "https://facebook.com" },
+  { name: "Twitter", icon: FaTwitter, link: "https://twitter.com" },
+  { name: "Instagram", icon: FaInstagram, link: "https://instagram.com" },
+  { name: "LinkedIn", icon: FaLinkedinIn, link: "https://linkedin.com" },
+];
 
 const FeatureCard = ({ icon: Icon, title, description }) => (
-  <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
-    <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4">
-      <Icon className="h-6 w-6 text-blue-600" />
+  <div className="bg-[#FEFFFA] p-6 rounded-2xl border border-[#3A3F47]/10 shadow-sm hover:shadow-lg hover:border-[#0E4D6B]/30 transition-all">
+    <div className="h-12 w-12 rounded-xl bg-[#0E4D6B]/10 flex items-center justify-center mb-4">
+      <Icon className="h-6 w-6 text-[#0E4D6B]" />
     </div>
-    <h3 className="text-lg font-bold text-blue-800 mb-2">{title}</h3>
-    <p className="text-gray-600 text-sm">{description}</p>
+    <h3 className="text-lg font-bold text-[#3A3F47] mb-2">{title}</h3>
+    <p className="text-[#3A3F47]/75 text-sm leading-relaxed">{description}</p>
   </div>
 );
 
@@ -87,52 +70,74 @@ const Home = () => {
         <link rel="canonical" href="/" />
       </Helmet>
 
-      <div className="min-h-screen">
-        {/* Navbar */}
-        <nav className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex items-center">
-                <span className="text-2xl font-bold text-blue-800">BRACUOca</span>
-              </div>
-              <div className="flex items-center gap-6">
-                <Link
-                  to="/login"
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-500 transition-all font-medium"
-                >
-                  Sign In
-                </Link>
-              </div>
-            </div>
-          </div>
-        </nav>
+      <div className="min-h-screen bg-[#FEFFFA] text-[#3A3F47] font-poppins">
+        {/* Hero + Integrated Header (Freezing Blue -> Cool Gray) */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#0E4D6B] via-[#1A4357] to-[#3A3F47]">
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-[#0E4D6B]/40 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-[#3A3F47]/60 blur-3xl pointer-events-none" />
 
-        {/* Hero Section */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#5BC0EB] to-[#1E90FF]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div className="flex flex-col items-center text-center py-32">
-              <div className="text-white max-w-3xl">
-                <div className="inline-block px-4 py-1 bg-white/10 rounded-full mb-6">
-                  <span className="text-white text-sm font-medium">Simplify Club Management</span>
+          {/* Navbar */}
+          <nav className="relative z-10 border-b border-[#FEFFFA]/10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center h-16">
+                <div className="flex items-center gap-3">
+                  <img
+                    src="/images/logos/oca.svg"
+                    alt="BRACUOca"
+                    className="h-9 w-9 rounded-lg shadow-sm"
+                  />
+                  <span className="text-xl font-bold text-[#FEFFFA] tracking-tight">
+                    BRACUOca
+                  </span>
                 </div>
-                <h1 className="text-6xl font-bold leading-tight mb-6">
-                  Play Beautiful <span className="text-yellow-400">Club Operations</span>
-                </h1>
-                <p className="text-white/80 text-xl mb-12 max-w-2xl mx-auto">
-                  BRACUOca offers tools to streamline event planning, manage members, and enhance collaboration with university offices.
-                </p>
-                <div className="flex flex-wrap gap-6 justify-center">
+                <div className="hidden md:flex items-center gap-8 text-sm font-medium text-[#FEFFFA]/80">
+                  <a href="#features" className="hover:text-[#FEFFFA] transition-colors">
+                    Features
+                  </a>
+                  <Link to="/login" className="hover:text-[#FEFFFA] transition-colors">
+                    Clubs Portal
+                  </Link>
+                </div>
+                <div className="flex items-center gap-4">
                   <Link
                     to="/login"
-                    className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-blue-50 transition-all font-medium text-lg shadow-lg hover:shadow-xl"
+                    className="bg-[#FEFFFA] text-[#3A3F47] px-5 py-2 rounded-full hover:bg-[#FEFFFA]/90 transition-all font-semibold text-sm shadow-sm"
+                  >
+                    Sign In
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          {/* Hero Content */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="flex flex-col items-center text-center py-28">
+              <div className="text-[#FEFFFA] max-w-3xl">
+                <div className="inline-block px-4 py-1.5 bg-[#FEFFFA]/10 border border-[#FEFFFA]/15 rounded-full mb-6 backdrop-blur-sm">
+                  <span className="text-[#FEFFFA] text-xs font-semibold tracking-wider uppercase">
+                    BRAC University • Office of Co-curricular Activities
+                  </span>
+                </div>
+                <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6 tracking-tight">
+                  Streamline Every{" "}
+                  <span className="text-[#8FD3F4]">Club Operation</span>
+                </h1>
+                <p className="text-[#FEFFFA]/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
+                  One unified platform for BRAC University clubs and OCA—manage event proposals, room bookings, budgets, announcements, and approvals seamlessly.
+                </p>
+                <div className="flex flex-wrap gap-4 justify-center">
+                  <Link
+                    to="/login"
+                    className="bg-[#FEFFFA] text-[#3A3F47] px-8 py-3.5 rounded-full hover:bg-[#FEFFFA]/90 transition-all font-semibold text-base shadow-lg"
                   >
                     Get Started
                   </Link>
                   <a
                     href="#features"
-                    className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white/10 transition-all font-medium text-lg"
+                    className="bg-transparent border border-[#FEFFFA]/35 text-[#FEFFFA] px-8 py-3.5 rounded-full hover:bg-[#FEFFFA]/10 transition-all font-medium text-base"
                   >
-                    Learn More
+                    Explore Features
                   </a>
                 </div>
               </div>
@@ -141,79 +146,49 @@ const Home = () => {
         </div>
 
         {/* Features Section */}
-        <div id="features" className="bg-white py-20">
+        <section id="features" className="py-20 bg-[#F4F6F8]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-blue-800 mb-4">
-                Comprehensive Club Management
+            <div className="text-center mb-14">
+              <span className="text-xs font-semibold uppercase tracking-widest text-[#0E4D6B]">
+                Platform Capabilities
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#3A3F47] mt-2">
+                Built for Clubs &amp; OCA Administration
               </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Our platform equips you with everything needed to efficiently manage your university club.
-              </p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {features.map((feature, index) => (
-                <FeatureCard
-                  key={index}
-                  icon={feature.icon}
-                  title={feature.title}
-                  description={feature.description}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {features.map((f, idx) => (
+                <FeatureCard key={idx} {...f} />
               ))}
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Footer */}
-        <footer className="bg-blue-800 text-white py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <div>
-                <h3 className="text-xl font-bold mb-4">BRACUOca</h3>
-                <p className="text-gray-300 text-sm">
-                  Simplifying university club management and event organization.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Quick Links</h4>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <Link to="/login" className="hover:text-yellow-400 transition-colors">
-                      Sign In
-                    </Link>
-                  </li>
-                  <li>
-                    <a href="#features" className="hover:text-yellow-400 transition-colors">
-                      Features
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Contact</h4>
-                <ul className="space-y-2 text-sm">
-                  <li>Email: support@bracuoca.com</li>
-                  <li>Phone: (123) 456-7890</li>
-                </ul>
-              </div>
-              <div>
-              <h4 className="font-semibold mb-4">Follow Us</h4>
-              <div className="flex gap-4">
-                {socialMedia.map((social, index) => (
+        <footer className="bg-[#3A3F47] text-[#FEFFFA] py-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div>
+              <span className="text-xl font-bold tracking-tight">BRACUOca</span>
+              <p className="text-sm text-[#FEFFFA]/65 mt-1">
+                © {new Date().getFullYear()} BRAC University Office of Co-curricular Activities.
+              </p>
+            </div>
+            <div className="flex gap-4">
+              {socialMedia.map((item) => {
+                const Icon = item.icon;
+                return (
                   <a
-                    key={index}
-                    href={social.link}
-                    className="text-white hover:text-yellow-400 transition-colors"
+                    key={item.name}
+                    href={item.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={item.name}
+                    className="w-9 h-9 rounded-full bg-[#FEFFFA]/10 hover:bg-[#0E4D6B] flex items-center justify-center transition-colors"
                   >
-                    <social.icon className="h-6 w-6" />
+                    <Icon className="h-4 w-4 text-[#FEFFFA]" />
                   </a>
-                ))}
-              </div>
-            </div>
-            </div>
-            <div className="border-t border-gray-700 mt-12 pt-8 text-center text-sm text-gray-400">
-              © 2024 BRACUOca. All rights reserved.
+                );
+              })}
             </div>
           </div>
         </footer>

@@ -1,5 +1,3 @@
-const dbConnect = require("../config/dbConfig");
+const { getDb } = require("../config/dbConfig");
 
-const clubCollection = dbConnect.db("BRACU_OCA").collection("clubs");
-
-module.exports = clubCollection;
+module.exports = getDb().collection("clubs");

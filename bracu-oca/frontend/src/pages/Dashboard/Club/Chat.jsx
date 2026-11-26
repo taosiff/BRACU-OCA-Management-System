@@ -1,9 +1,9 @@
-import axios from "axios";
 import { useContext, useEffect, useRef, useState } from "react";
 import { BiSend } from "react-icons/bi";
 import { FaVideo } from "react-icons/fa";
 import { AuthContext } from "../../../Context/AuthProvider";
-import useCurrentUser from "../../../Hooks/useCurrentUser";
+import useCurrentUser from "../../../hooks/useCurrentUser";
+import apiClient from "../../../utils/apiClient";
 
 const Chat = () => {
   const { user } = useContext(AuthContext);
@@ -12,31 +12,32 @@ const Chat = () => {
   const chatContainerRef = useRef(null);
   const [currUser] = useCurrentUser();
 
-  const username = user?.email.split("@")[0];
+  const username = user?.email ? user.email.split("@")[0] : "";
   const uppercaseUsername = username.toUpperCase();
 
   const handleSendMessage = () => {
+    if (!user?.email || !text.trim()) return;
     const messageInfo = {
-      senderEmail: user?.email,
+      senderEmail: user.email,
       receiverEmail: "oca@bracu.ac.bd",
-      content: text,
+      content: text.trim(),
       date: new Date().toISOString().split("T")[0],
       time: new Date().toLocaleTimeString("en-US", { hour12: true })
     };
     
-    axios.post(`${import.meta.env.VITE_API_URL}/send-message`, messageInfo).then((res) => {
+    apiClient.post("/send-message", messageInfo).then(() => {
       setMessage((prevMessages) => [...prevMessages, messageInfo]);
       setText('');
-    });
+    }).catch((err) => console.error("Failed to send message:", err));
   };
 
   useEffect(() => {
-    
-    axios.get(`${import.meta.env.VITE_API_URL}/messages/${user?.email}`)
+    if (!user?.email) return;
+    apiClient.get(`/messages/${user.email}`)
       .then((res) => {
         setMessage(res.data);
-        
-      });
+      })
+      .catch((err) => console.error("Failed to fetch messages:", err));
   }, [user?.email]);
 
   // Scroll to the bottom when messages change
@@ -51,7 +52,7 @@ const Chat = () => {
       {/* header */}
       <div className="navbar p-0 mt-[-20px]">
         <div className="flex-1">
-          <a className="text-3xl font-bold text-[#303972] ">Chat</a>
+          <a className="text-3xl font-bold text-[#3A3F47] ">Chat</a>
         </div>
         <div className="flex-none gap-2">
           
@@ -80,7 +81,7 @@ const Chat = () => {
               <div className="avatar">
                 <div className="mask mask-squircle h-12 w-12">
                   <img
-                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW710hPlb48q-g88rWvxavK9XmOeFOXU1ZMA&s"
+                    src="/images/logos/oca.svg"
                     alt="Avatar Tailwind CSS Component"
                   />
                 </div>
@@ -116,12 +117,12 @@ const Chat = () => {
                   <div className="w-10 rounded-full">
                     <img
                       alt="Tailwind CSS chat bubble component"
-                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW710hPlb48q-g88rWvxavK9XmOeFOXU1ZMA&s"
+                      src="/images/logos/oca.svg"
                     />
                   </div>
                 </div>
                 <div className="chat-header ">OCA</div>
-                <div className="chat-bubble bg-[#F5F5F5] text-base text-[#303972]">
+                <div className="chat-bubble bg-[#F5F5F5] text-base text-[#3A3F47]">
                   {msg.content}
                 </div>
                 <div className="chat-footer opacity-100">
@@ -140,7 +141,7 @@ const Chat = () => {
                   </div>
                 </div>
                 <div className="chat-header">{uppercaseUsername}</div>
-                <div className="chat-bubble bg-[#4D44B5] text-white text-base">
+                <div className="chat-bubble bg-[#0E4D6B] text-white text-base">
                   {msg.content}
                 </div>
                 <div className="chat-footer opacity-100">
@@ -159,7 +160,7 @@ const Chat = () => {
             className="input input-bordered join-item text-[14px] font-normal text-black w-[100%] rounded-2xl bg-white"
             placeholder="Write your message..."
           />
-          <button onClick={handleSendMessage} className="btn join-item rounded-r-full text-white bg-[#4D44B5]">
+          <button onClick={handleSendMessage} className="btn join-item rounded-r-full text-white bg-[#0E4D6B]">
             Send <BiSend />
           </button>
         </div>

@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { BiSend } from "react-icons/bi";
 import { FaVideo } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import Loading from "../../../components/Loading";
+import apiClient from "../../../utils/apiClient";
 
 const ChatWithClub = () => {
   const { email } = useParams();
@@ -17,20 +17,21 @@ const ChatWithClub = () => {
   const chatContainerRef = useRef(null);
 
   const handleSendMessage = () => {
+    if (!email || !text.trim()) return;
     const messageInfo = {
       senderEmail: "oca@bracu.ac.bd",
       receiverEmail: email,
-      content: text,
+      content: text.trim(),
       date: new Date().toISOString().split("T")[0],
       time: new Date().toLocaleTimeString("en-US", { hour12: true }),
     };
-    axios
-      .post(`${import.meta.env.VITE_API_URL}/send-message`, messageInfo)
-      .then((res) => {
-        setMessage([...messages, messageInfo]);
+    apiClient
+      .post("/send-message", messageInfo)
+      .then(() => {
+        setMessage((prev) => [...prev, messageInfo]);
         setText("");
-
-      });
+      })
+      .catch((err) => console.error("Failed to send message:", err));
   };
 
   // Scroll to the latest message when messages change
@@ -43,9 +44,7 @@ const ChatWithClub = () => {
   const { data: clubInfo, isLoading } = useQuery({
     queryKey: ["clubInfo"],
     queryFn: async () => {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/club-list`
-      );
+      const response = await apiClient.get("/club-list");
       return response.data;
     },
   });
@@ -53,12 +52,13 @@ const ChatWithClub = () => {
   const [text, setText] = useState("");
   // fetch chat messages from API
   useEffect(() => {
-    
-    axios
-      .get(`${import.meta.env.VITE_API_URL}/messages/${email}`)
+    if (!email) return;
+    apiClient
+      .get(`/messages/${email}`)
       .then((res) => {
         setMessage(res.data);
-      });
+      })
+      .catch((err) => console.error("Failed to fetch messages:", err));
   }, [email]);
   if (isLoading) {
     return <Loading />
@@ -74,7 +74,7 @@ const ChatWithClub = () => {
               <div className="avatar">
                 <div className="mask mask-squircle h-12 w-12">
                   <img
-                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW710hPlb48q-g88rWvxavK9XmOeFOXU1ZMA&s"
+                    src={club?.photo_url || "/images/logos/oca.svg"}
                     alt="Avatar Tailwind CSS Component"
                   />
                 </div>
@@ -115,12 +115,12 @@ const ChatWithClub = () => {
                   <div className="w-10 rounded-full">
                     <img
                       alt="Tailwind CSS chat bubble component"
-                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW710hPlb48q-g88rWvxavK9XmOeFOXU1ZMA&s"
+                      src={club?.photo_url || "/images/logos/oca.svg"}
                     />
                   </div>
                 </div>
                 <div className="chat-header">OCA</div>
-                <div className="chat-bubble bg-[#F5F5F5] text-base text-[#303972]">
+                <div className="chat-bubble bg-[#F5F5F5] text-base text-[#3A3F47]">
                   {msg.content}
                 </div>
                 <div className="chat-footer opacity-100">
@@ -141,7 +141,7 @@ const ChatWithClub = () => {
                   </div>
                 </div>
                 <div className="chat-header">{uppercaseUsername}</div>
-                <div className="chat-bubble bg-[#4D44B5] text-white text-base">
+                <div className="chat-bubble bg-[#0E4D6B] text-white text-base">
                   {msg.content}
                 </div>
                 <div className="chat-footer opacity-100">
@@ -167,7 +167,7 @@ const ChatWithClub = () => {
           <button
             onClick={() => handleSendMessage()}
             type="submit"
-            className="btn join-item rounded-r-full text-white bg-[#4D44B5]"
+            className="btn join-item rounded-r-full text-white bg-[#0E4D6B]"
           >
             Send <BiSend />
           </button>
